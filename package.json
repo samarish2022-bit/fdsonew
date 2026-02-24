@@ -1,0 +1,14 @@
+{
+  "name": "fdso-site",
+  "version": "1.0.0",
+  "description": "Сайт Федерации Дартс Самара",
+  "scripts": {
+    "start": "node server.js",
+    "optimize-hero": "node scripts/optimize-hero.js"
+  },
+  "private": true,
+  "dependencies": {
+    "express": "^4.18.2",
+    "sharp": "^0.33.5"
+  }
+}

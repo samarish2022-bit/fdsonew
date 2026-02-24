@@ -1,0 +1,288 @@
+/* Панель администратора ФДСО */
+
+.admin-page {
+  min-height: 100vh;
+  background: var(--color-bg-alt, #f5f5f7);
+}
+
+/* Экран входа */
+.admin-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.admin-login-box {
+  width: 100%;
+  max-width: 360px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.admin-login-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--color-text, #1d1d1f);
+}
+
+.admin-login-desc {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted, #6e6e73);
+  margin-bottom: 1.5rem;
+}
+
+.admin-login-form .form-label {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.admin-login-form .form-control {
+  border-radius: 8px;
+}
+
+/* Шапка панели */
+.admin-dashboard .admin-header {
+  background: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.admin-header-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text, #1d1d1f);
+}
+
+/* Табы */
+.admin-dashboard .nav-tabs {
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+.admin-dashboard .nav-tabs .nav-link {
+  color: var(--color-text-muted, #6e6e73);
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+}
+
+.admin-dashboard .nav-tabs .nav-link:hover {
+  color: var(--color-primary, #0071e3);
+  border-color: transparent;
+}
+
+.admin-dashboard .nav-tabs .nav-link.active {
+  color: var(--color-primary, #0071e3);
+  background: transparent;
+  border-bottom-color: var(--color-primary, #0071e3);
+}
+
+/* Карточки */
+.admin-dashboard .card {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.admin-dashboard .card-header {
+  background: var(--color-bg-alt, #f5f5f7);
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.admin-dashboard .card-body {
+  padding: 1.25rem;
+}
+
+.admin-dashboard .list-group-item {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Элемент фото в списке */
+.admin-photo-item .card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+}
+
+.admin-photo-item img {
+  max-height: 120px;
+  object-fit: cover;
+}
+
+/* Кнопки */
+.admin-dashboard .btn-primary {
+  border-radius: 8px;
+}
+
+.admin-dashboard .btn-outline-danger.btn-sm {
+  white-space: nowrap;
+}
+
+/* Загрузка файлов */
+.admin-upload-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-filename {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-preview img {
+  display: block;
+}
+
+.admin-preview-multi .d-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.admin-preview-thumb {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Таблица детализации мужских турниров в админке */
+.admin-detail-table-wrapper {
+  max-height: 70vh;
+  overflow: auto;
+}
+.admin-detail-table {
+  font-size: 0.8rem;
+  min-width: 900px;
+}
+.admin-detail-table th,
+.admin-detail-table td {
+  padding: 0.2rem;
+  vertical-align: middle;
+}
+.admin-detail-table input {
+  width: 2.8rem;
+  max-width: 100%;
+  padding: 0.15rem 0.25rem;
+  font-size: inherit;
+}
+.admin-detail-table .col-name-input {
+  min-width: 12rem;
+  width: auto;
+}
+.admin-detail-table .col-rank-input {
+  width: 2.2rem;
+  text-align: center;
+}
+.admin-detail-table .col-sum-input {
+  width: 3rem;
+  font-weight: 600;
+}
+.admin-detail-table .btn-row-del {
+  padding: 0.15rem 0.35rem;
+  font-size: 0.75rem;
+}
+
+.admin-detail-table .admin-date-col {
+  white-space: nowrap;
+}
+.admin-detail-table .admin-date-col span {
+  margin-right: 0.25rem;
+}
+.admin-detail-table .admin-del-date {
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--color-text-muted, #6e6e73);
+  text-decoration: none;
+  vertical-align: middle;
+}
+.admin-detail-table .admin-del-date:hover {
+  color: #dc3545;
+}
+
+.admin-detail-table .admin-col-hidden {
+  display: none !important;
+}
+
+/* Редактор текста новости: панель и поле */
+.admin-editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+.admin-editor-toolbar .admin-edit-bold,
+.admin-editor-toolbar .admin-edit-italic {
+  font-weight: 700;
+  min-width: 2rem;
+}
+.admin-editor-toolbar .admin-edit-italic {
+  font-style: italic;
+  font-weight: 600;
+}
+.admin-rich-text {
+  min-height: 80px;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.admin-rich-text:focus {
+  outline: 0;
+  border-color: var(--color-primary, #0d6efd);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+.admin-rich-text-empty:empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-text-muted, #6e6e73);
+}
+
+/* Пикер смайликов */
+.admin-emoji-picker {
+  display: none;
+  position: absolute;
+  z-index: 1050;
+  padding: 0.5rem;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  max-width: 240px;
+}
+.admin-emoji-picker.show {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.admin-emoji-btn {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.admin-emoji-btn:hover {
+  background: var(--color-bg-alt, #f5f5f7);
+}
+.admin-emoji-btn:focus {
+  outline: 0;
+}

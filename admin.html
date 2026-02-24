@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Панель администратора — ФДСО</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="images/fdso_title300bd.png" type="image/png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-page">
+  <div id="admin-login" class="admin-login">
+    <div class="admin-login-box">
+      <h1 class="admin-login-title">Панель администратора</h1>
+      <p class="admin-login-desc">Федерация Дартс Самарской области</p>
+      <form id="login-form" class="admin-login-form">
+        <label for="admin-password" class="form-label">Пароль</label>
+        <input type="password" id="admin-password" class="form-control" required autocomplete="current-password" placeholder="Введите пароль">
+        <p id="login-error" class="admin-login-error text-danger small mt-2 mb-0" style="display: none;">Неверный пароль</p>
+        <button type="submit" class="btn btn-primary w-100 mt-3">Войти</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="admin-dashboard" class="admin-dashboard" style="display: none;">
+    <header class="admin-header">
+      <div class="container d-flex justify-content-between align-items-center py-3">
+        <h1 class="admin-header-title mb-0">Панель администратора</h1>
+        <div class="d-flex align-items-center gap-3">
+          <a href="index.html" class="btn btn-outline-primary btn-sm" target="_blank">Открыть сайт</a>
+          <button type="button" id="admin-logout" class="btn btn-outline-secondary btn-sm">Выйти</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="container py-4">
+      <ul class="nav nav-tabs mb-4" id="admin-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="news-tab" data-bs-toggle="tab" data-bs-target="#news-panel" type="button" role="tab">Новости</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="competitions-tab" data-bs-toggle="tab" data-bs-target="#competitions-panel" type="button" role="tab">Соревнования</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="photos-tab" data-bs-toggle="tab" data-bs-target="#photos-panel" type="button" role="tab">Фотографии</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents-panel" type="button" role="tab">Документы</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="friends-tab" data-bs-toggle="tab" data-bs-target="#friends-panel" type="button" role="tab">Наши друзья</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="men-tournaments-tab" data-bs-toggle="tab" data-bs-target="#men-tournaments-panel" type="button" role="tab">Мужские турниры</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="women-tournaments-tab" data-bs-toggle="tab" data-bs-target="#women-tournaments-panel" type="button" role="tab">Женские турниры</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="men-doubles-tournaments-tab" data-bs-toggle="tab" data-bs-target="#men-doubles-tournaments-panel" type="button" role="tab">Мужской рейтинг пары</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="women-doubles-tournaments-tab" data-bs-toggle="tab" data-bs-target="#women-doubles-tournaments-panel" type="button" role="tab">Женский рейтинг пары</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="people-tab" data-bs-toggle="tab" data-bs-target="#people-panel" type="button" role="tab">Люди</button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="admin-tab-content">
+        <!-- Новости -->
+        <div class="tab-pane fade show active" id="news-panel" role="tabpanel">
+          <div class="card mb-4">
+            <div class="card-header">Добавить новость</div>
+            <div class="card-body">
+              <form id="form-add-news">
+                <div class="mb-3">
+                  <label for="news-title" class="form-label">Заголовок</label>
+                  <input type="text" id="news-title" class="form-control" required placeholder="Например: Турнир по дартс">
+                </div>
+                <div class="mb-3">
+                  <label for="news-text" class="form-label">Текст</label>
+                  <div class="admin-editor-toolbar mb-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary admin-edit-bold" title="Жирный" aria-label="Жирный">Ж</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary admin-edit-italic" title="Курсив" aria-label="Курсив">К</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary admin-edit-emoji" title="Вставить смайлик" aria-label="Смайлик">😀</button>
+                    <div class="admin-emoji-picker dropdown-menu" id="news-emoji-picker"></div>
+                  </div>
+                  <div id="news-text" contenteditable="true" class="form-control admin-rich-text" data-placeholder="Краткое описание новости" role="textbox" aria-label="Текст новости"></div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Изображение к новости <span class="text-muted">(необязательно)</span></label>
+                  <input type="text" id="news-image-url" class="form-control mb-2" placeholder="Путь на сайте, напр. images/uploads/img-1.jpg">
+                  <div class="admin-upload-row">
+                    <label class="btn btn-outline-secondary btn-sm mb-0">Выбрать файл с компьютера
+                      <input type="file" id="news-image-file" accept="image/*" class="d-none">
+                    </label>
+                    <span id="news-image-filename" class="admin-filename text-muted small"></span>
+                    <button type="button" id="news-image-clear" class="btn btn-link btn-sm p-0 ms-2" style="display: none;">Убрать</button>
+                  </div>
+                  <p class="text-muted small mt-1 mb-0">Изображение сохраняется в данных сайта и отображается на страницах.</p>
+                  <div id="news-image-preview" class="admin-preview mt-2"></div>
+                </div>
+                <div class="mb-3">
+                  <label for="news-date" class="form-label">Дата</label>
+                  <input type="date" id="news-date" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Добавить новость</button>
+              </form>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+              <span>Добавленные новости</span>
+              <div class="d-flex gap-2">
+                <button type="button" id="news-export-btn" class="btn btn-outline-secondary btn-sm">Экспорт JSON</button>
+                <button type="button" id="news-export-js-btn" class="btn btn-outline-secondary btn-sm">Экспорт JS (для file://)</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="text-muted small mb-2">Новости сохраняются в <strong>data/news.json</strong>. Откройте админку и сайт по адресу сервера (например <code>http://localhost:3000</code>) — тогда добавленные новости будут отображаться на сайте для всех устройств. Без сервера: «Экспорт JSON» → в <strong>data/news.json</strong>; при открытии по file:// — «Экспорт JS» → <strong>data/news-data.js</strong>.</p>
+              <ul id="admin-news-list" class="list-group list-group-flush"></ul>
+              <p id="news-empty" class="text-muted small mb-0 mt-2">Пока нет добавленных новостей.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Соревнования -->
+        <div class="tab-pane fade" id="competitions-panel" role="tabpanel">
+          <div class="card mb-4">
+            <div class="card-header">Добавить соревнование</div>
+            <div class="card-body">
+              <form id="form-add-competition">
+                <div class="mb-3">
+                  <label for="competition-title" class="form-label">Название</label>
+                  <input type="text" id="competition-title" class="form-control" required placeholder="Например: Кубок весны по дартс">
+                </div>
+                <div class="mb-3">
+                  <label for="competition-text" class="form-label">Описание</label>
+                  <textarea id="competition-text" class="form-control" rows="3" required placeholder="Краткое описание соревнования"></textarea>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Изображение к соревнованию <span class="text-muted">(необязательно)</span></label>
+                  <input type="text" id="competition-image-url" class="form-control mb-2" placeholder="Путь на сайте, напр. images/uploads/img-1.jpg">
+                  <div class="admin-upload-row">
+                    <label class="btn btn-outline-secondary btn-sm mb-0">Выбрать файл с компьютера
+                      <input type="file" id="competition-image-file" accept="image/*" class="d-none">
+                    </label>
+                    <span id="competition-image-filename" class="admin-filename text-muted small"></span>
+                    <button type="button" id="competition-image-clear" class="btn btn-link btn-sm p-0 ms-2" style="display: none;">Убрать</button>
+                  </div>
+                  <p class="text-muted small mt-1 mb-0">Изображение сохраняется на сайте и отображается в карточках соревнований.</p>
+                  <div id="competition-image-preview" class="admin-preview mt-2"></div>
+                </div>
+                <div class="mb-3">
+                  <label for="competition-date" class="form-label">Дата</label>
+                  <input type="date" id="competition-date" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                  <label for="competition-status" class="form-label">Статус</label>
+                  <select id="competition-status" class="form-select">
+                    <option value="upcoming">Скоро</option>
+                    <option value="past">Завершён</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Добавить соревнование</button>
+              </form>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Добавленные соревнования</div>
+            <div class="card-body">
+              <p class="text-muted small mb-2">Соревнования сохраняются в <strong>data/competitions.json</strong>. Откройте админку и сайт по адресу сервера — тогда соревнования будут отображаться на главной для всех.</p>
+              <ul id="admin-competitions-list" class="list-group list-group-flush"></ul>
+              <p id="competitions-empty" class="text-muted small mb-0 mt-2">Пока нет добавленных соревнований.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Модальное окно редактирования соревнования -->
+        <div class="modal fade" id="modal-edit-competition" tabindex="-1" aria-labelledby="modal-edit-competition-label" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modal-edit-competition-label">Редактировать соревнование</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+              </div>
+              <div class="modal-body">
+                <form id="form-edit-competition">
+                  <input type="hidden" id="edit-competition-id">
+                  <div class="mb-3">
+                    <label for="edit-competition-title" class="form-label">Название</label>
+                    <input type="text" id="edit-competition-title" class="form-control" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="edit-competition-text" class="form-label">Описание</label>
+                    <textarea id="edit-competition-text" class="form-control" rows="3" required></textarea>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Изображение к соревнованию <span class="text-muted">(необязательно)</span></label>
+                    <input type="text" id="edit-competition-image-url" class="form-control mb-2" placeholder="Путь на сайте, напр. images/uploads/img-1.jpg">
+                    <div class="admin-upload-row">
+                      <label class="btn btn-outline-secondary btn-sm mb-0">Выбрать файл с компьютера
+                        <input type="file" id="edit-competition-image-file" accept="image/*" class="d-none">
+                      </label>
+                      <span id="edit-competition-image-filename" class="admin-filename text-muted small"></span>
+                      <button type="button" id="edit-competition-image-clear" class="btn btn-link btn-sm p-0 ms-2" style="display: none;">Убрать</button>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Изображение сохраняется на сайте и отображается в карточках соревнований.</p>
+                    <div id="edit-competition-image-preview" class="admin-preview mt-2"></div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="edit-competition-date" class="form-label">Дата</label>
+                    <input type="date" id="edit-competition-date" class="form-control" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="edit-competition-status" class="form-label">Статус</label>
+                    <select id="edit-competition-status" class="form-select">
+                      <option value="upcoming">Скоро</option>
+                      <option value="past">Завершён</option>
+                    </select>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" id="edit-competition-save" class="btn btn-primary">Сохранить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Модальное окно редактирования новости -->
+        <div class="modal fade" id="modal-edit-news" tabindex="-1" aria-labelledby="modal-edit-news-label" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modal-edit-news-label">Редактировать новость</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+              </div>
+              <div class="modal-body">
+                <form id="form-edit-news">
+                  <input type="hidden" id="edit-news-id">
+                  <div class="mb-3">
+                    <label for="edit-news-title" class="form-label">Заголовок</label>
+                    <input type="text" id="edit-news-title" class="form-control" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="edit-news-text" class="form-label">Текст</label>
+                    <div class="admin-editor-toolbar mb-1">
+                      <button type="button" class="btn btn-sm btn-outline-secondary admin-edit-bold" title="Жирный" aria-label="Жирный">Ж</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary admin-edit-italic" title="Курсив" aria-label="Курсив">К</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary admin-edit-emoji" title="Вставить смайлик" aria-label="Смайлик">😀</button>
+                      <div class="admin-emoji-picker dropdown-menu" id="edit-news-emoji-picker"></div>
+                    </div>
+                    <div id="edit-news-text" contenteditable="true" class="form-control admin-rich-text" role="textbox" aria-label="Текст новости"></div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Изображение <span class="text-muted">(необязательно)</span></label>
+                    <input type="text" id="edit-news-image-url" class="form-control mb-2" placeholder="Путь на сайте, напр. images/uploads/img-1.jpg">
+                    <div class="admin-upload-row">
+                      <label class="btn btn-outline-secondary btn-sm mb-0">Загрузить с компьютера
+                        <input type="file" id="edit-news-image-file" accept="image/*" class="d-none">
+                      </label>
+                      <span id="edit-news-image-filename" class="admin-filename text-muted small"></span>
+                      <button type="button" id="edit-news-image-clear" class="btn btn-link btn-sm p-0 ms-2" style="display: none;">Убрать</button>
+                    </div>
+                    <div id="edit-news-image-preview" class="admin-preview mt-2"></div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="edit-news-date" class="form-label">Дата</label>
+                    <input type="date" id="edit-news-date" class="form-control" required>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" id="edit-news-save" class="btn btn-primary">Сохранить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Модальное окно редактирования документа -->
+        <div class="modal fade" id="modal-edit-document" tabindex="-1" aria-labelledby="modal-edit-document-label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modal-edit-document-label">Редактировать документ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+              </div>
+              <div class="modal-body">
+                <form id="form-edit-document">
+                  <input type="hidden" id="edit-doc-id">
+                  <div class="mb-3">
+                    <label for="edit-doc-title" class="form-label">Название</label>
+                    <input type="text" id="edit-doc-title" class="form-control" required placeholder="Например: Устав ФДСО">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Файл документа</label>
+                    <input type="text" id="edit-doc-url" class="form-control mb-2" placeholder="URL: https://... или оставьте текущий файл">
+                    <div class="admin-upload-row">
+                      <label class="btn btn-outline-secondary btn-sm mb-0">Загрузить новый файл
+                        <input type="file" id="edit-doc-file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="d-none">
+                      </label>
+                      <span id="edit-doc-filename" class="admin-filename text-muted small"></span>
+                      <button type="button" id="edit-doc-clear" class="btn btn-link btn-sm p-0 ms-2" style="display: none;">Убрать</button>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Оставьте URL пустым и не загружайте файл — сохранится текущий документ.</p>
+                  </div>
+                  <div class="mb-3">
+                    <label for="edit-doc-meta" class="form-label">Тип (подпись)</label>
+                    <input type="text" id="edit-doc-meta" class="form-control" placeholder="PDF, DOC, DOCX">
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" id="edit-doc-save" class="btn btn-primary">Сохранить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Модальное окно редактирования друга -->
+        <div class="modal fade" id="modal-edit-friend" tabindex="-1" aria-labelledby="modal-edit-friend-label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modal-edit-friend-label">Редактировать ссылку</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+              </div>
+              <div class="modal-body">
+                <form id="form-edit-friend">
+                  <input type="hidden" id="edit-friend-id">
+                  <div class="mb-3">
+                    <label for="edit-friend-title" class="form-label">Название</label>
+                    <input type="text" id="edit-friend-title" class="form-control" required placeholder="Название">
+                  </div>
+                  <div class="mb-3">
+                    <label for="edit-friend-url" class="form-label">Ссылка</label>
+                    <input type="url" id="edit-friend-url" class="form-control" required placeholder="https://...">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Иконка</label>
+                    <div class="admin-upload-row">
+                      <label class="btn btn-outline-secondary btn-sm mb-0">Выбрать изображение
+                        <input type="file" id="edit-friend-icon-file" accept="image/*" class="d-none">
+                      </label>
+                      <span id="edit-friend-icon-filename" class="admin-filename text-muted small"></span>
+                      <button type="button" id="edit-friend-icon-clear" class="btn btn-link btn-sm p-0 ms-2" style="display: none;">Убрать</button>
+                    </div>
+                    <div id="edit-friend-icon-preview" class="admin-preview mt-2"></div>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" id="edit-friend-save" class="btn btn-primary">Сохранить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Фотографии -->
+        <div class="tab-pane fade" id="photos-panel" role="tabpanel">
+          <div class="card mb-4">
+            <div class="card-header">Добавить фотографию</div>
+            <div class="card-body">
+              <form id="form-add-photo">
+                <div class="mb-3">
+                  <label class="form-label">Изображение</label>
+                  <input type="text" id="photo-url" class="form-control mb-2" placeholder="URL: https://... (одно изображение)">
+                  <div class="admin-upload-row">
+                    <label class="btn btn-outline-secondary btn-sm mb-0">Выбрать файлы с компьютера
+                      <input type="file" id="photo-file" accept="image/*" multiple class="d-none">
+                    </label>
+                    <span id="photo-filename" class="admin-filename text-muted small"></span>
+                    <button type="button" id="photo-clear" class="btn btn-link btn-sm p-0 ms-2" style="display: none;">Убрать</button>
+                  </div>
+                  <p class="text-muted small mt-1 mb-0">Укажите путь (напр. images/uploads/img-1.jpg) или выберите файлы. Для всех выбранных — одно соревнование и подпись.</p>
+                  <div id="photo-preview" class="admin-preview admin-preview-multi mt-2"></div>
+                </div>
+                <div class="mb-3">
+                  <label for="photo-competition" class="form-label">Соревнование</label>
+                  <input type="text" id="photo-competition" class="form-control" placeholder="Например: Кубок весны 2025">
+                  <p class="text-muted small mt-1 mb-0">Фото будут сгруппированы по названию соревнования на сайте.</p>
+                </div>
+                <div class="mb-3">
+                  <label for="photo-caption" class="form-label">Подпись</label>
+                  <input type="text" id="photo-caption" class="form-control" placeholder="Например: Награждение победителей">
+                </div>
+                <button type="submit" class="btn btn-primary">Добавить фотографию</button>
+              </form>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Добавленные фотографии</div>
+            <div class="card-body">
+              <p class="text-muted small mb-2">Фотографии сохраняются на сервере: файлы — в <strong>images/uploads/photos/&lt;соревнование&gt;/</strong>, список — в <strong>data/photos.json</strong>. Откройте админку по адресу сервера (npm start) — тогда загрузка и галерея будут работать для всех.</p>
+              <div id="admin-photos-list" class="row g-3"></div>
+              <p id="photos-empty" class="text-muted small mb-0 mt-2">Пока нет добавленных фотографий.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Документы -->
+        <div class="tab-pane fade" id="documents-panel" role="tabpanel">
+          <div class="card mb-4">
+            <div class="card-header">Добавить документ</div>
+            <div class="card-body">
+              <form id="form-add-document">
+                <div class="mb-3">
+                  <label for="doc-title" class="form-label">Название</label>
+                  <input type="text" id="doc-title" class="form-control" required placeholder="Например: Устав ФДСО">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Файл документа</label>
+                  <input type="text" id="doc-url" class="form-control mb-2" placeholder="URL: https://...">
+                  <div class="admin-upload-row">
+                    <label class="btn btn-outline-secondary btn-sm mb-0">Загрузить с компьютера
+                      <input type="file" id="doc-file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="d-none">
+                    </label>
+                    <span id="doc-filename" class="admin-filename text-muted small"></span>
+                    <button type="button" id="doc-clear" class="btn btn-link btn-sm p-0 ms-2" style="display: none;">Убрать</button>
+                  </div>
+                  <p class="text-muted small mt-1 mb-0">Укажите ссылку или выберите файл (PDF, DOC, DOCX). Размер хранилища ограничен (~5 МБ).</p>
+                </div>
+                <div class="mb-3">
+                  <label for="doc-meta" class="form-label">Тип (подпись)</label>
+                  <input type="text" id="doc-meta" class="form-control" placeholder="PDF — заполнится автоматически при загрузке файла">
+                </div>
+                <button type="submit" class="btn btn-primary">Добавить документ</button>
+              </form>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Добавленные документы</div>
+            <div class="card-body">
+              <p class="text-muted small mb-2">Документы сохраняются в <strong>data/documents.json</strong>. Откройте админку и сайт по адресу сервера — тогда документы будут отображаться на главной для всех.</p>
+              <ul id="admin-documents-list" class="list-group list-group-flush"></ul>
+              <p id="documents-empty" class="text-muted small mb-0 mt-2">Пока нет добавленных документов.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Наши друзья -->
+        <div class="tab-pane fade" id="friends-panel" role="tabpanel">
+          <div class="card mb-4">
+            <div class="card-header">Добавить друга (ссылку)</div>
+            <div class="card-body">
+              <form id="form-add-friend">
+                <div class="mb-3">
+                  <label for="friend-title" class="form-label">Название</label>
+                  <input type="text" id="friend-title" class="form-control" required placeholder="Например: Федерация дартс России">
+                </div>
+                <div class="mb-3">
+                  <label for="friend-url" class="form-label">Ссылка на сайт или канал</label>
+                  <input type="url" id="friend-url" class="form-control" required placeholder="https://...">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Иконка (логотип)</label>
+                  <div class="admin-upload-row">
+                    <label class="btn btn-outline-secondary btn-sm mb-0">Выбрать изображение
+                      <input type="file" id="friend-icon-file" accept="image/*" class="d-none">
+                    </label>
+                    <span id="friend-icon-filename" class="admin-filename text-muted small"></span>
+                    <button type="button" id="friend-icon-clear" class="btn btn-link btn-sm p-0 ms-2" style="display: none;">Убрать</button>
+                  </div>
+                  <p class="text-muted small mt-1 mb-0">Квадратное или круглое изображение будет отображаться в блоке «Наши друзья» на главной.</p>
+                  <div id="friend-icon-preview" class="admin-preview mt-2"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Добавить</button>
+              </form>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Добавленные ссылки</div>
+            <div class="card-body">
+              <p class="text-muted small mb-2">Данные сохраняются в <strong>data/friends.json</strong>. Иконки — в <strong>images/uploads/friends/</strong>.</p>
+              <ul id="admin-friends-list" class="list-group list-group-flush"></ul>
+              <p id="friends-empty" class="text-muted small mb-0 mt-2">Пока нет добавленных ссылок.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Мужские турниры -->
+        <div class="tab-pane fade" id="men-tournaments-panel" role="tabpanel">
+          <div class="card mb-4">
+            <div class="card-header">Детализация мужских турниров</div>
+            <div class="card-body">
+              <p class="text-muted small mb-3">Редактируйте таблицу детализации. Данные сохраняются в браузере и отображаются на странице <a href="rating-men-detail.html" target="_blank">«Детализация мужских турниров»</a>. Если сохранений ещё не было — нажмите «Загрузить данные по умолчанию» с текущей страницы.</p>
+              <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                <button type="button" id="men-tournaments-load-default" class="btn btn-outline-secondary btn-sm">Загрузить данные по умолчанию</button>
+                <button type="button" id="men-tournaments-add-date" class="btn btn-outline-secondary btn-sm">Добавить столбец (дату)</button>
+                <button type="button" id="men-tournaments-add-row" class="btn btn-outline-primary btn-sm">Добавить строку</button>
+                <button type="button" id="men-tournaments-save" class="btn btn-primary btn-sm">Сохранить таблицу</button>
+                <div class="dropdown d-inline-block" id="men-tournaments-show-cols-wrap" style="display: none;">
+                  <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" id="men-tournaments-show-cols-btn" data-bs-toggle="dropdown" aria-expanded="false">Показать столбцы</button>
+                  <ul class="dropdown-menu" id="men-tournaments-show-cols-list" aria-labelledby="men-tournaments-show-cols-btn"></ul>
+                </div>
+              </div>
+              <div id="men-tournaments-load-status" class="small mb-2" style="display: none;"></div>
+              <div class="table-responsive admin-detail-table-wrapper">
+                <table class="table table-bordered table-sm admin-detail-table" id="admin-men-tournaments-table">
+                  <thead id="admin-men-tournaments-thead"></thead>
+                  <tbody id="admin-men-tournaments-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Женские турниры -->
+        <div class="tab-pane fade" id="women-tournaments-panel" role="tabpanel">
+          <div class="card mb-4">
+            <div class="card-header">Детализация женских турниров</div>
+            <div class="card-body">
+              <p class="text-muted small mb-3">Редактируйте таблицу детализации. Данные сохраняются в браузере и отображаются на странице <a href="rating-women-detail.html" target="_blank">«Детализация женских турниров»</a>. Если сохранений ещё не было — нажмите «Загрузить данные по умолчанию» с текущей страницы.</p>
+              <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                <button type="button" id="women-tournaments-load-default" class="btn btn-outline-secondary btn-sm">Загрузить данные по умолчанию</button>
+                <button type="button" id="women-tournaments-add-date" class="btn btn-outline-secondary btn-sm">Добавить столбец (дату)</button>
+                <button type="button" id="women-tournaments-add-row" class="btn btn-outline-primary btn-sm">Добавить строку</button>
+                <button type="button" id="women-tournaments-save" class="btn btn-primary btn-sm">Сохранить таблицу</button>
+                <div class="dropdown d-inline-block" id="women-tournaments-show-cols-wrap" style="display: none;">
+                  <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" id="women-tournaments-show-cols-btn" data-bs-toggle="dropdown" aria-expanded="false">Показать столбцы</button>
+                  <ul class="dropdown-menu" id="women-tournaments-show-cols-list" aria-labelledby="women-tournaments-show-cols-btn"></ul>
+                </div>
+              </div>
+              <div id="women-tournaments-load-status" class="small mb-2" style="display: none;"></div>
+              <div class="table-responsive admin-detail-table-wrapper">
+                <table class="table table-bordered table-sm admin-detail-table" id="admin-women-tournaments-table">
+                  <thead id="admin-women-tournaments-thead"></thead>
+                  <tbody id="admin-women-tournaments-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Мужской рейтинг пары -->
+        <div class="tab-pane fade" id="men-doubles-tournaments-panel" role="tabpanel">
+          <div class="card mb-4">
+            <div class="card-header">Детализация мужских парных турниров</div>
+            <div class="card-body">
+              <p class="text-muted small mb-3">Редактируйте таблицу детализации. Данные сохраняются в браузере и отображаются на странице <a href="rating-men-doubles-detail.html" target="_blank">«Детализация мужских парных турниров»</a>. Если сохранений ещё не было — нажмите «Загрузить данные по умолчанию» с текущей страницы.</p>
+              <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                <button type="button" id="men-doubles-tournaments-load-default" class="btn btn-outline-secondary btn-sm">Загрузить данные по умолчанию</button>
+                <button type="button" id="men-doubles-tournaments-add-date" class="btn btn-outline-secondary btn-sm">Добавить столбец (дату)</button>
+                <button type="button" id="men-doubles-tournaments-add-row" class="btn btn-outline-primary btn-sm">Добавить строку</button>
+                <button type="button" id="men-doubles-tournaments-save" class="btn btn-primary btn-sm">Сохранить таблицу</button>
+                <div class="dropdown d-inline-block" id="men-doubles-tournaments-show-cols-wrap" style="display: none;">
+                  <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" id="men-doubles-tournaments-show-cols-btn" data-bs-toggle="dropdown" aria-expanded="false">Показать столбцы</button>
+                  <ul class="dropdown-menu" id="men-doubles-tournaments-show-cols-list" aria-labelledby="men-doubles-tournaments-show-cols-btn"></ul>
+                </div>
+              </div>
+              <div id="men-doubles-tournaments-load-status" class="small mb-2" style="display: none;"></div>
+              <div class="table-responsive admin-detail-table-wrapper">
+                <table class="table table-bordered table-sm admin-detail-table" id="admin-men-doubles-tournaments-table">
+                  <thead id="admin-men-doubles-tournaments-thead"></thead>
+                  <tbody id="admin-men-doubles-tournaments-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Женский рейтинг пары -->
+        <div class="tab-pane fade" id="women-doubles-tournaments-panel" role="tabpanel">
+          <div class="card mb-4">
+            <div class="card-header">Детализация женских парных турниров</div>
+            <div class="card-body">
+              <p class="text-muted small mb-3">Редактируйте таблицу детализации. Данные сохраняются в браузере и отображаются на странице <a href="rating-women-doubles-detail.html" target="_blank">«Детализация женских парных турниров»</a>. Если сохранений ещё не было — нажмите «Загрузить данные по умолчанию» с текущей страницы.</p>
+              <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                <button type="button" id="women-doubles-tournaments-load-default" class="btn btn-outline-secondary btn-sm">Загрузить данные по умолчанию</button>
+                <button type="button" id="women-doubles-tournaments-add-date" class="btn btn-outline-secondary btn-sm">Добавить столбец (дату)</button>
+                <button type="button" id="women-doubles-tournaments-add-row" class="btn btn-outline-primary btn-sm">Добавить строку</button>
+                <button type="button" id="women-doubles-tournaments-save" class="btn btn-primary btn-sm">Сохранить таблицу</button>
+                <div class="dropdown d-inline-block" id="women-doubles-tournaments-show-cols-wrap" style="display: none;">
+                  <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" id="women-doubles-tournaments-show-cols-btn" data-bs-toggle="dropdown" aria-expanded="false">Показать столбцы</button>
+                  <ul class="dropdown-menu" id="women-doubles-tournaments-show-cols-list" aria-labelledby="women-doubles-tournaments-show-cols-btn"></ul>
+                </div>
+              </div>
+              <div id="women-doubles-tournaments-load-status" class="small mb-2" style="display: none;"></div>
+              <div class="table-responsive admin-detail-table-wrapper">
+                <table class="table table-bordered table-sm admin-detail-table" id="admin-women-doubles-tournaments-table">
+                  <thead id="admin-women-doubles-tournaments-thead"></thead>
+                  <tbody id="admin-women-doubles-tournaments-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Люди -->
+        <div class="tab-pane fade" id="people-panel" role="tabpanel">
+          <div class="card mb-4">
+            <div class="card-header">Участники соревнований</div>
+            <div class="card-body">
+              <p class="text-muted small mb-3">ФИО взяты из рейтингов (мужской, женский, парные). Повторы не добавляются. Укажите дату рождения и отметьте оплату взноса.</p>
+              <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                <button type="button" id="people-sync-from-ratings" class="btn btn-outline-primary btn-sm">Обновить список из рейтингов</button>
+                <button type="button" id="people-save" class="btn btn-primary btn-sm">Сохранить изменения</button>
+              </div>
+              <div class="card mb-3">
+                <div class="card-body py-2">
+                  <p class="small mb-2 fw-semibold">Добавить человека вручную</p>
+                  <div class="d-flex flex-wrap gap-2 align-items-end">
+                    <div class="flex-grow-1" style="min-width: 12rem;">
+                      <label for="people-add-name" class="form-label visually-hidden">ФИО</label>
+                      <input type="text" id="people-add-name" class="form-control form-control-sm" placeholder="ФИО" maxlength="200">
+                    </div>
+                    <div style="width: 11rem;">
+                      <label for="people-add-birth" class="form-label visually-hidden">Дата рождения</label>
+                      <input type="date" id="people-add-birth" class="form-control form-control-sm" placeholder="Дата рождения">
+                    </div>
+                    <div class="form-check form-check-inline mb-0">
+                      <input type="checkbox" id="people-add-fee" class="form-check-input" title="Оплата взноса">
+                      <label for="people-add-fee" class="form-check-label small">Оплата взноса</label>
+                    </div>
+                    <button type="button" id="people-add-btn" class="btn btn-outline-secondary btn-sm">Добавить</button>
+                  </div>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-bordered table-sm table-hover">
+                  <thead>
+                    <tr>
+                      <th scope="col" class="col-name">ФИО</th>
+                      <th scope="col" style="width:11rem;">Дата рождения</th>
+                      <th scope="col" style="width:8rem;">Оплата взноса</th>
+                    </tr>
+                  </thead>
+                  <tbody id="people-tbody"></tbody>
+                </table>
+              </div>
+              <p id="people-empty" class="text-muted small mb-0 mt-2">Нажмите «Обновить список из рейтингов», чтобы подтянуть ФИО участников из рейтингов.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+  <script src="js/default-men-tournaments.js"></script>
+  <script src="js/default-women-tournaments.js"></script>
+  <script src="js/default-men-doubles-tournaments.js"></script>
+  <script src="js/default-women-doubles-tournaments.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

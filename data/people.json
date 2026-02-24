@@ -1,0 +1,572 @@
+[
+  {
+    "name": "Абрамов Виктор Александрович",
+    "birthDate": "1977-06-26",
+    "feePaid": true
+  },
+  {
+    "name": "Абросимова Ирина Вячеславовна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Агапов Сергей Владимирович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Алексеева Ольга",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Бадыков Дамир",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Бажуткин Вячеслав Александрович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Бахитов Рустям Анасович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Башкатова Алена",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Бесполитов Антон",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Бирюков Андрей",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Бочкарев Александр Сергеевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Бурнаев Сергей",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Бутяева Марина Григорьевна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Бутяева Мария",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Быстрова Елена Юрьевна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Ваганов Владимир Анатольевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Веригин Павел Евгеньевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Ганин Александр Евгеньевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Гарус Алексей",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Гарус Елена",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Гнедков Максим",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Говязин Александр Юрьевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Горин Александр Александрович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Гурский Даниил Олегович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Гусаров Андрей Александрович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Дмитриев Валерий",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Должников Александр",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Елистратов Павел Анатольевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Елистратов Роман Павлович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Елистратова Татьяна Владимировна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Еремина Светлана Викторовна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Ефремов Анатолий Андреевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Зайка Сергей",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Земляков Виктор Викторович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Иванов Алексей Сергеевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Калядин Александр Евгеньевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Карцев Евгений Анатольевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Колбасина Альфия Минвалиевна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Колесов Леонид",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Королева Анастасия Павловна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Кравченко Олег Николаевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Кучеров Сергей Юрьевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Кучерова Оксана",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Ларькин Александр Иванович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Ларькин Владислав Александрович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Ларькин Иван Иванович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Лебакин Леонид Юрьевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Леонов Сергей Анатольевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Литвинов Дмитрий Владиславович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Максячкина Елена",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Малафеев Иван Леонидович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Манджапарашвили Роланди Зурабович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Маркелова Екатерина",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Мартынов Александр Владимирович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Матвеев Евгений Николаевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Медякова Ольга Николаевна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Мельников Александр Сергеевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Митричев Кирилл Анатольевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Михайлов Анатолий Юрьевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Михалченко Александр Анатольевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Мишин Михаил Михайлович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Мищенко Андрей Александрович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Морозов Артём",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Морозова Ольга",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Нестеров Иван",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Никишов Олег Викторович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Никишова Милена Олеговна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Облыгин Петр Евгеньевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Осипов Вячеслав",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Осипова Алевтина",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Парфенов Алексей",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Петин Сергей Олегович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Петров Иван Александрович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Петрова Ольга Владимировна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Пищихин Анатолий Александрович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Плеханов Максим",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Пузиков Олег Анатольевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Разуваев Алексей Анатольевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Савинков Максим",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Салаев Гурам Сейфетович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Самаркин Иван Владимирович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Самаркина Лилия",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Саньков Николай Александрович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Сергеев Андрей Викторович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Сергеев Юрий Викторович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Сергеева Раиса Ивановна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Серегин Виталий Анатольевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Сизов Ярослав",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Синегуб Семён Игоревич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Смолин Дмитрий Андреевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Срыбной Михаил Викторович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Стекольников Дмитрий Алексеевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Степанова Динара",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Сычев Максим Сергеевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Татаренков Александр Владимирович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Татаринов Дмитрий Сергеевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Трошина Зиля Рашитовна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Трунов Ярослав",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Тямусев Александр Иванович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Уралов Андрей Генрихович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Фролов Юрий Константинович",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Ховалкина Татьяна Николаевна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Хоменко Александр Валериевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Хоменко Лидия Борисовна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Чепурнова Татьяна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Четверикова Светлана Владимировна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Чихаривская Лариса Николаевна",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Чихаривская Наталья",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Чихаривский Владимир Олегович",
+    "birthDate": "",
+    "feePaid": true
+  },
+  {
+    "name": "Шайхутдинов Руслан",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Шамарин Алексей Анатольевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Швецов Максим Геннадьевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Шеин Олег Анатольевич",
+    "birthDate": "",
+    "feePaid": false
+  },
+  {
+    "name": "Ширин Артём Николаевич",
+    "birthDate": "",
+    "feePaid": false
+  }
+]
