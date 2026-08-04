@@ -1426,6 +1426,242 @@ body {
   color: var(--color-primary);
 }
 
+/* Legal pages (privacy / terms) — popup-friendly */
+.legal-page {
+  background: var(--color-bg-alt);
+  min-height: 100vh;
+}
+
+.legal-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.legal-header-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.legal-brand {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.legal-close {
+  flex-shrink: 0;
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 980px;
+  cursor: pointer;
+  transition: background var(--transition-base), border-color var(--transition-base);
+}
+
+.legal-close:hover {
+  background: var(--color-bg-alt);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.legal-main {
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.legal-article {
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  padding: 1.75rem 1.5rem 2.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.legal-article h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+.legal-meta {
+  margin: 0 0 1.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.legal-article h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--color-text);
+}
+
+.legal-article p,
+.legal-article li {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--color-text);
+}
+
+.legal-article p {
+  margin: 0 0 0.85rem;
+}
+
+.legal-article ul,
+.legal-article ol {
+  margin: 0 0 0.85rem;
+  padding-left: 1.25rem;
+}
+
+.legal-article li {
+  margin-bottom: 0.35rem;
+}
+
+.legal-article a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.legal-article a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 576px) {
+  .legal-article {
+    padding: 1.25rem 1rem 1.75rem;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .legal-article h1 {
+    font-size: 1.375rem;
+  }
+
+  .legal-main {
+    padding: 0 0 2rem;
+  }
+}
+
+/* Overlay popup for privacy / terms (не блокируется как window.open) */
+body.legal-popup-open {
+  overflow: hidden;
+}
+
+.legal-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.legal-popup-overlay[hidden] {
+  display: none !important;
+}
+
+.legal-popup-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.legal-popup-window {
+  position: relative;
+  z-index: 1;
+  width: min(720px, 100%);
+  height: min(820px, calc(100vh - 2rem));
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.legal-popup-chrome {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.legal-popup-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.legal-popup-close {
+  flex-shrink: 0;
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 980px;
+  cursor: pointer;
+}
+
+.legal-popup-close:hover {
+  background: var(--color-bg-alt);
+}
+
+.legal-popup-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: var(--color-bg-alt);
+}
+
+/* Внутри iframe: компактный вид без дублирующей кнопки закрытия */
+html.legal-embed .legal-header {
+  display: none;
+}
+
+html.legal-embed .legal-main {
+  padding-top: 1rem;
+}
+
+@media (max-width: 576px) {
+  .legal-popup-overlay {
+    padding: 0;
+  }
+
+  .legal-popup-window {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+}
+
 .footer-sep {
   margin: 0 0.5rem;
   color: var(--color-text-muted);
