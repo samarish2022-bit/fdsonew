@@ -749,6 +749,12 @@ body {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  white-space: pre-line;
+}
+.competition-card-text br {
+  display: block;
+  margin-top: 0.25em;
+  line-height: 1.5;
 }
 
 .competition-card-expanded .competition-card-text {
