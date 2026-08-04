@@ -1,14 +1,39 @@
 /**
  * Локальный сервер: раздача сайта и сохранение новостей в data/news.json.
  * Запуск: npm start
+ * Пароль админки: ADMIN_PASSWORD в .env или окружении (не хранить в клиентском JS).
  */
 var path = require('path');
 var fs = require('fs');
+var crypto = require('crypto');
 var express = require('express');
 var sharp = require('sharp');
 
+function loadEnvFile() {
+  var envPath = path.join(__dirname, '.env');
+  if (!fs.existsSync(envPath)) return;
+  fs.readFileSync(envPath, 'utf8').split(/\r?\n/).forEach(function (line) {
+    var s = line.trim();
+    if (!s || s.charAt(0) === '#') return;
+    var i = s.indexOf('=');
+    if (i < 1) return;
+    var key = s.slice(0, i).trim();
+    var val = s.slice(i + 1).trim();
+    if ((val.charAt(0) === '"' && val.charAt(val.length - 1) === '"') ||
+        (val.charAt(0) === "'" && val.charAt(val.length - 1) === "'")) {
+      val = val.slice(1, -1);
+    }
+    if (process.env[key] === undefined) process.env[key] = val;
+  });
+}
+
+loadEnvFile();
+
 var app = express();
 var PORT = process.env.PORT || 3000;
+var ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+var ADMIN_TOKEN_TTL_MS = parseInt(process.env.ADMIN_TOKEN_TTL_MS || String(12 * 60 * 60 * 1000), 10);
+var ADMIN_CORS_ORIGIN = (process.env.ADMIN_CORS_ORIGIN || '').trim();
 var NEWS_FILE = path.join(__dirname, 'data', 'news.json');
 var COMPETITIONS_FILE = path.join(__dirname, 'data', 'competitions.json');
 var DOCUMENTS_FILE = path.join(__dirname, 'data', 'documents.json');
@@ -21,6 +46,87 @@ var UPLOADS_COMPETITIONS_BASE = path.join(__dirname, 'images', 'uploads', 'compe
 var UPLOADS_FRIENDS_BASE = path.join(__dirname, 'images', 'uploads', 'friends');
 var UPLOADS_DOCUMENTS_BASE = path.join(__dirname, 'images', 'uploads', 'documents');
 var DOCUMENTS_URL_PREFIX = 'images/uploads/documents/';
+
+/** token -> { expiresAt } */
+var adminSessions = Object.create(null);
+/** ip -> { count, resetAt } */
+var loginAttempts = Object.create(null);
+var LOGIN_MAX_ATTEMPTS = 5;
+var LOGIN_WINDOW_MS = 15 * 60 * 1000;
+
+if (!ADMIN_PASSWORD) {
+  ADMIN_PASSWORD = crypto.randomBytes(18).toString('base64url');
+  console.warn('WARNING: ADMIN_PASSWORD не задан. Сгенерирован временный пароль (только для этой сессии процесса):');
+  console.warn('  ADMIN_PASSWORD=' + ADMIN_PASSWORD);
+  console.warn('Задайте постоянный пароль в файле .env или переменной окружения.');
+}
+
+function safeEqualString(a, b) {
+  var bufA = Buffer.from(String(a), 'utf8');
+  var bufB = Buffer.from(String(b), 'utf8');
+  if (bufA.length !== bufB.length) {
+    crypto.timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+function createAdminToken() {
+  var token = crypto.randomBytes(32).toString('hex');
+  adminSessions[token] = { expiresAt: Date.now() + ADMIN_TOKEN_TTL_MS };
+  return token;
+}
+
+function revokeAdminToken(token) {
+  if (token && adminSessions[token]) delete adminSessions[token];
+}
+
+function isValidAdminToken(token) {
+  if (!token || typeof token !== 'string') return false;
+  var session = adminSessions[token];
+  if (!session) return false;
+  if (Date.now() > session.expiresAt) {
+    delete adminSessions[token];
+    return false;
+  }
+  return true;
+}
+
+function getBearerToken(req) {
+  var h = req.headers.authorization || req.headers.Authorization || '';
+  if (typeof h === 'string' && h.indexOf('Bearer ') === 0) {
+    return h.slice(7).trim();
+  }
+  var alt = req.headers['x-admin-token'];
+  return alt && typeof alt === 'string' ? alt.trim() : '';
+}
+
+function clientIp(req) {
+  var xf = req.headers['x-forwarded-for'];
+  if (xf && typeof xf === 'string') return xf.split(',')[0].trim();
+  return req.socket && req.socket.remoteAddress ? req.socket.remoteAddress : 'unknown';
+}
+
+function checkLoginRateLimit(ip) {
+  var now = Date.now();
+  var entry = loginAttempts[ip];
+  if (!entry || now > entry.resetAt) {
+    loginAttempts[ip] = { count: 0, resetAt: now + LOGIN_WINDOW_MS };
+    entry = loginAttempts[ip];
+  }
+  if (entry.count >= LOGIN_MAX_ATTEMPTS) {
+    return { ok: false, retryAfterMs: Math.max(0, entry.resetAt - now) };
+  }
+  return { ok: true, entry: entry };
+}
+
+function requireAuth(req, res, next) {
+  var token = getBearerToken(req);
+  if (!isValidAdminToken(token)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}
 
 var DOCUMENT_MIME_EXT = {
   'application/pdf': 'pdf',
@@ -113,13 +219,56 @@ function migrateItemImage(item, baseDir, urlPrefix, suffix) {
 // Лимит 50mb — документы с base64 (загруженные файлы) могут быть большими
 app.use(express.json({ limit: '50mb' }));
 
-// CORS для API: админка может открываться с file:// или другого порта
+// CORS: по умолчанию только same-origin; при необходимости ADMIN_CORS_ORIGIN=https://example.com
 app.use('/api', function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  var origin = req.headers.origin;
+  if (ADMIN_CORS_ORIGIN && origin === ADMIN_CORS_ORIGIN) {
+    res.setHeader('Access-Control-Allow-Origin', ADMIN_CORS_ORIGIN);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else if (!origin) {
+    // same-origin / curl — без CORS-заголовков
+  } else if (origin === 'http://localhost:' + PORT || origin === 'http://127.0.0.1:' + PORT) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
+});
+
+/** Авторизация админки */
+app.post('/api/login', function (req, res) {
+  var ip = clientIp(req);
+  var limit = checkLoginRateLimit(ip);
+  if (!limit.ok) {
+    res.setHeader('Retry-After', String(Math.ceil(limit.retryAfterMs / 1000)));
+    return res.status(429).json({ error: 'Too many login attempts. Try again later.' });
+  }
+  var password = req.body && req.body.password != null ? String(req.body.password) : '';
+  if (!safeEqualString(password, ADMIN_PASSWORD)) {
+    limit.entry.count += 1;
+    return res.status(401).json({ error: 'Invalid password' });
+  }
+  delete loginAttempts[ip];
+  var token = createAdminToken();
+  res.json({
+    ok: true,
+    token: token,
+    expiresInMs: ADMIN_TOKEN_TTL_MS
+  });
+});
+
+app.post('/api/logout', requireAuth, function (req, res) {
+  revokeAdminToken(getBearerToken(req));
+  res.json({ ok: true });
+});
+
+app.get('/api/auth/check', function (req, res) {
+  var token = getBearerToken(req);
+  if (!isValidAdminToken(token)) {
+    return res.status(401).json({ ok: false });
+  }
+  res.json({ ok: true });
 });
 
 /** API — до раздачи статики */
@@ -138,7 +287,7 @@ app.get('/api/news', function (req, res) {
   }
 });
 
-app.post('/api/save-news', function (req, res) {
+app.post('/api/save-news', requireAuth, function (req, res) {
   var raw = Array.isArray(req.body) ? req.body : [];
   try {
     var data = raw.map(function (item, idx) {
@@ -171,7 +320,7 @@ app.get('/api/competitions', function (req, res) {
   }
 });
 
-app.post('/api/save-competitions', function (req, res) {
+app.post('/api/save-competitions', requireAuth, function (req, res) {
   var raw = Array.isArray(req.body) ? req.body : [];
   try {
     var data = raw.map(function (item, idx) {
@@ -204,7 +353,7 @@ app.get('/api/documents', function (req, res) {
   }
 });
 
-app.post('/api/save-documents', function (req, res) {
+app.post('/api/save-documents', requireAuth, function (req, res) {
   if (req.body === undefined || req.body === null) {
     return res.status(413).json({ error: 'Payload too large or invalid JSON' });
   }
@@ -235,7 +384,7 @@ app.post('/api/save-documents', function (req, res) {
 });
 
 /** Загрузка документа (PDF/DOC/DOCX). Тело: { fileBase64, filename }. Ответ: { url, meta } */
-app.post('/api/upload-document', function (req, res) {
+app.post('/api/upload-document', requireAuth, function (req, res) {
   if (req.body == null) return res.status(413).json({ error: 'Payload too large or invalid JSON' });
   var fileBase64 = req.body.fileBase64;
   var filename = req.body.filename || 'document';
@@ -276,7 +425,7 @@ app.get('/api/friends', function (req, res) {
   }
 });
 
-app.post('/api/save-friends', function (req, res) {
+app.post('/api/save-friends', requireAuth, function (req, res) {
   if (req.body === undefined || req.body === null) {
     return res.status(413).json({ error: 'Payload too large or invalid JSON' });
   }
@@ -313,7 +462,7 @@ app.get('/api/photos', function (req, res) {
   }
 });
 
-app.post('/api/save-photos', function (req, res) {
+app.post('/api/save-photos', requireAuth, function (req, res) {
   if (req.body === undefined || req.body === null) {
     return res.status(413).json({ error: 'Payload too large or invalid JSON' });
   }
@@ -335,7 +484,7 @@ app.post('/api/save-photos', function (req, res) {
   }
 });
 
-app.post('/api/upload-photo', function (req, res) {
+app.post('/api/upload-photo', requireAuth, function (req, res) {
   if (req.body === undefined || req.body === null) {
     return res.status(413).json({ error: 'Payload too large or invalid JSON' });
   }
@@ -384,7 +533,7 @@ app.post('/api/upload-photo', function (req, res) {
 });
 
 /** Загрузка изображений для новостей и соревнований. Тело: { imageBase64, type: "news"|"competition" }. Ответ: { url } */
-app.post('/api/upload-image', function (req, res) {
+app.post('/api/upload-image', requireAuth, function (req, res) {
   if (req.body == null) return res.status(413).json({ error: 'Payload too large or invalid JSON' });
   var imageBase64 = req.body.imageBase64;
   var type = (req.body.type || '').toLowerCase();
@@ -408,7 +557,7 @@ app.post('/api/upload-image', function (req, res) {
 });
 
 /** Одноразовая миграция: вынести imageDataUrl из news.json и competitions.json в файлы, перезаписать JSON без base64. Вызовите: POST /api/migrate-images */
-app.post('/api/migrate-images', function (req, res) {
+app.post('/api/migrate-images', requireAuth, function (req, res) {
   var result = { news: 0, competitions: 0 };
   try {
     if (fs.existsSync(NEWS_FILE)) {
@@ -457,7 +606,7 @@ app.get('/api/people', function (req, res) {
   }
 });
 
-app.post('/api/save-people', function (req, res) {
+app.post('/api/save-people', requireAuth, function (req, res) {
   if (req.body === undefined || req.body === null) {
     return res.status(413).json({ error: 'Payload too large or invalid JSON' });
   }
@@ -483,4 +632,5 @@ app.use(express.static(__dirname));
 app.listen(PORT, function () {
   console.log('Сайт: http://localhost:' + PORT);
   console.log('Новости сохраняются в data/news.json');
+  console.log('Админ-API защищён токеном (POST /api/login)');
 });

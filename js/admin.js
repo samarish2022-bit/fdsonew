@@ -1,15 +1,15 @@
 /**
  * Панель администратора ФДСО
- * Авторизация по паролю, данные в localStorage.
- * Пароль по умолчанию: fdso2025 — измените в переменной ADMIN_PASSWORD ниже.
+ * Авторизация через POST /api/login (пароль только на сервере).
+ * Данные в localStorage + запись на сервер с Bearer-токеном.
  */
 
 (function () {
   'use strict';
 
   var ADMIN_SESSION_KEY = 'fdso_admin_session';
+  var ADMIN_TOKEN_KEY = 'fdso_admin_token';
   var ADMIN_ACTIVE_TAB_KEY = 'fdso_admin_active_tab';
-  var ADMIN_PASSWORD = 'fdso2025'; // Смените на свой пароль
   var KEY_NEWS = 'fdso_admin_news';
   var KEY_COMPETITIONS = 'fdso_admin_competitions';
   var KEY_PHOTOS = 'fdso_admin_photos';
@@ -61,6 +61,62 @@
   var editFriendCurrentIconUrl = null;
   var editFriendIconCleared = false;
 
+  function getApiOrigin() {
+    if (typeof location !== 'undefined' && location.origin &&
+        (location.origin.startsWith('http://') || location.origin.startsWith('https://'))) {
+      return location.origin;
+    }
+    return 'http://localhost:3000';
+  }
+
+  function getAdminToken() {
+    try {
+      return sessionStorage.getItem(ADMIN_TOKEN_KEY) || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function setAdminToken(token) {
+    try {
+      if (token) sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
+      else sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+    } catch (e) {}
+  }
+
+  function authHeaders(extra) {
+    var headers = { 'Content-Type': 'application/json' };
+    var token = getAdminToken();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    if (extra) {
+      for (var k in extra) if (Object.prototype.hasOwnProperty.call(extra, k)) headers[k] = extra[k];
+    }
+    return headers;
+  }
+
+  function handleUnauthorized(response) {
+    if (response && response.status === 401) {
+      setAuthenticated(false);
+      showScreen(true);
+      return true;
+    }
+    return false;
+  }
+
+  /** fetch с Bearer-токеном; при 401 сбрасывает сессию */
+  function apiFetch(url, options) {
+    options = options || {};
+    var opts = {};
+    for (var k in options) if (Object.prototype.hasOwnProperty.call(options, k)) opts[k] = options[k];
+    opts.headers = authHeaders(options.headers || null);
+    return fetch(url, opts).then(function (r) {
+      if (handleUnauthorized(r)) {
+        return Promise.reject(new Error('Требуется вход в админку'));
+      }
+      return r;
+    });
+  }
+
   /** Сжатие + путь и data URL (только для фотогалереи, без загрузки на сервер). */
   function saveImageToSite(file, maxWidth, quality) {
     maxWidth = maxWidth || 1200;
@@ -75,11 +131,10 @@
   function uploadImageToSite(file, type, maxWidth, quality) {
     maxWidth = maxWidth || 1200;
     quality = quality || 0.8;
-    var origin = (typeof location !== 'undefined' && location.origin && (location.origin.startsWith('http://') || location.origin.startsWith('https://'))) ? location.origin : 'http://localhost:3000';
+    var origin = getApiOrigin();
     return compressImage(file, maxWidth, quality).then(function (dataUrl) {
-      return fetch(origin + '/api/upload-image', {
+      return apiFetch(origin + '/api/upload-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageBase64: dataUrl, type: type })
       }).then(function (r) {
         if (!r.ok) return r.json().then(function (err) { throw new Error(err.error || r.statusText); });
@@ -90,15 +145,12 @@
 
   /** Загрузка документа на сервер. Возвращает { url, meta }. */
   function uploadDocumentToSite(file) {
-    var origin = (typeof location !== 'undefined' && location.origin && (location.origin.startsWith('http://') || location.origin.startsWith('https://')))
-      ? location.origin
-      : 'http://localhost:3000';
+    var origin = getApiOrigin();
     return new Promise(function (resolve, reject) {
       var reader = new FileReader();
       reader.onload = function (e) {
-        fetch(origin + '/api/upload-document', {
+        apiFetch(origin + '/api/upload-document', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ fileBase64: e.target.result, filename: file.name || 'document' })
         })
           .then(function (r) {
@@ -156,7 +208,7 @@
   }
 
   function isAuthenticated() {
-    return sessionStorage.getItem(ADMIN_SESSION_KEY) === '1';
+    return !!getAdminToken() && sessionStorage.getItem(ADMIN_SESSION_KEY) === '1';
   }
 
   function setAuthenticated(value) {
@@ -164,6 +216,7 @@
       sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
     } else {
       sessionStorage.removeItem(ADMIN_SESSION_KEY);
+      setAdminToken('');
     }
   }
 
@@ -224,9 +277,8 @@
       if (item.imageUrl) o.imageUrl = item.imageUrl;
       return o;
     });
-    fetch(origin + '/api/save-competitions', {
+    apiFetch(origin + '/api/save-competitions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
       .then(function (r) {
@@ -266,9 +318,8 @@
       if (item.imageUrl) o.imageUrl = item.imageUrl;
       return o;
     });
-    fetch(origin + '/api/save-news', {
+    apiFetch(origin + '/api/save-news', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
       .then(function (r) {
@@ -320,9 +371,8 @@
     var toSave = (Array.isArray(arr) ? arr : []).map(function (p) {
       return { id: p.id, url: p.url, thumbUrl: p.thumbUrl || undefined, caption: p.caption || '', competition: p.competition || '' };
     });
-    fetch(url, {
+    apiFetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(toSave)
     })
       .then(function (r) {
@@ -368,9 +418,8 @@
     var url = (typeof location !== 'undefined' && location.origin && (location.origin.startsWith('http://') || location.origin.startsWith('https://')))
       ? '/api/save-documents'
       : 'http://localhost:3000/api/save-documents';
-    fetch(url, {
+    apiFetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(Array.isArray(arr) ? arr : [])
     })
       .then(function (r) {
@@ -421,9 +470,8 @@
     var url = (typeof location !== 'undefined' && location.origin && (location.origin.startsWith('http://') || location.origin.startsWith('https://')))
       ? '/api/save-friends'
       : 'http://localhost:3000/api/save-friends';
-    fetch(url, {
+    apiFetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(Array.isArray(arr) ? arr : [])
     })
       .then(function (r) {
@@ -549,9 +597,8 @@
       ? '/api/save-people'
       : 'http://localhost:3000/api/save-people';
     var arr = (list && Array.isArray(list)) ? list : [];
-    fetch(url, {
+    apiFetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(arr)
     })
       .then(function (r) {
@@ -2807,14 +2854,54 @@
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var pwd = passwordInput && passwordInput.value ? passwordInput.value : '';
-      if (pwd === ADMIN_PASSWORD) {
-        setAuthenticated(true);
-        if (errorEl) errorEl.style.display = 'none';
-        passwordInput.value = '';
-        showScreen(false);
-      } else {
-        if (errorEl) errorEl.style.display = 'block';
+      if (!pwd) {
+        if (errorEl) {
+          errorEl.textContent = 'Введите пароль';
+          errorEl.style.display = 'block';
+        }
+        return;
       }
+      var submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+      if (errorEl) errorEl.style.display = 'none';
+
+      fetch(getApiOrigin() + '/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pwd })
+      })
+        .then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (data) {
+            return { ok: r.ok, status: r.status, data: data };
+          });
+        })
+        .then(function (result) {
+          if (result.ok && result.data && result.data.token) {
+            setAdminToken(result.data.token);
+            sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
+            if (errorEl) errorEl.style.display = 'none';
+            if (passwordInput) passwordInput.value = '';
+            showScreen(false);
+            return;
+          }
+          if (errorEl) {
+            if (result.status === 429) {
+              errorEl.textContent = 'Слишком много попыток. Подождите и попробуйте снова.';
+            } else {
+              errorEl.textContent = 'Неверный пароль';
+            }
+            errorEl.style.display = 'block';
+          }
+        })
+        .catch(function () {
+          if (errorEl) {
+            errorEl.textContent = 'Не удалось связаться с сервером. Откройте админку через http://…/admin.html';
+            errorEl.style.display = 'block';
+          }
+        })
+        .then(function () {
+          if (submitBtn) submitBtn.disabled = false;
+        });
     });
   }
 
@@ -2822,8 +2909,19 @@
     var btn = document.getElementById('admin-logout');
     if (btn) {
       btn.addEventListener('click', function () {
-        setAuthenticated(false);
-        showScreen(true);
+        var token = getAdminToken();
+        var finish = function () {
+          setAuthenticated(false);
+          showScreen(true);
+        };
+        if (!token) {
+          finish();
+          return;
+        }
+        fetch(getApiOrigin() + '/api/logout', {
+          method: 'POST',
+          headers: authHeaders()
+        }).catch(function () {}).then(finish);
       });
     }
   }
@@ -3210,9 +3308,8 @@
       var apiBase = origin || 'http://localhost:3000';
 
       function uploadOnePhoto(imageBase64, filename, doneCallback) {
-        fetch(apiBase + '/api/upload-photo', {
+        apiFetch(apiBase + '/api/upload-photo', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ competition: competition, caption: caption, imageBase64: imageBase64, filename: filename || 'photo.jpg' })
         })
           .then(function (r) { return r.ok ? r.json() : r.json().then(function (err) { throw new Error(err.error || r.status); }); })
@@ -3638,12 +3735,36 @@
     });
   }
 
-  function init() {
-    if (isAuthenticated()) {
-      showScreen(false);
-    } else {
-      showScreen(true);
+  function verifySessionThen(callback) {
+    var token = getAdminToken();
+    if (!token) {
+      setAuthenticated(false);
+      callback(false);
+      return;
     }
+    fetch(getApiOrigin() + '/api/auth/check', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          setAuthenticated(false);
+          callback(false);
+          return;
+        }
+        sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
+        callback(true);
+      })
+      .catch(function () {
+        // Сеть недоступна — не пускаем в панель записи без проверки
+        setAuthenticated(false);
+        callback(false);
+      });
+  }
+
+  function init() {
+    verifySessionThen(function (ok) {
+      showScreen(!ok);
+    });
     initLogin();
     initLogout();
     initAdminTabPersistence();
