@@ -140,7 +140,13 @@
                 </div>
                 <div class="mb-3">
                   <label for="competition-text" class="form-label">Описание</label>
-                  <textarea id="competition-text" class="form-control" rows="3" required placeholder="Краткое описание соревнования"></textarea>
+                  <div class="admin-editor-toolbar mb-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary admin-edit-bold" title="Жирный" aria-label="Жирный">Ж</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary admin-edit-italic" title="Курсив" aria-label="Курсив">К</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary admin-edit-emoji" title="Вставить смайлик" aria-label="Смайлик">😀</button>
+                    <div class="admin-emoji-picker dropdown-menu" id="competition-emoji-picker"></div>
+                  </div>
+                  <div id="competition-text" contenteditable="true" class="form-control admin-rich-text" data-placeholder="Краткое описание соревнования" role="textbox" aria-label="Описание соревнования"></div>
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Изображение к соревнованию <span class="text-muted">(необязательно)</span></label>
@@ -197,7 +203,13 @@
                   </div>
                   <div class="mb-3">
                     <label for="edit-competition-text" class="form-label">Описание</label>
-                    <textarea id="edit-competition-text" class="form-control" rows="3" required></textarea>
+                    <div class="admin-editor-toolbar mb-1">
+                      <button type="button" class="btn btn-sm btn-outline-secondary admin-edit-bold" title="Жирный" aria-label="Жирный">Ж</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary admin-edit-italic" title="Курсив" aria-label="Курсив">К</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary admin-edit-emoji" title="Вставить смайлик" aria-label="Смайлик">😀</button>
+                      <div class="admin-emoji-picker dropdown-menu" id="edit-competition-emoji-picker"></div>
+                    </div>
+                    <div id="edit-competition-text" contenteditable="true" class="form-control admin-rich-text" role="textbox" aria-label="Описание соревнования"></div>
                   </div>
                   <div class="mb-3">
                     <label class="form-label">Изображение к соревнованию <span class="text-muted">(необязательно)</span></label>

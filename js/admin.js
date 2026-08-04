@@ -2395,7 +2395,7 @@
       li.className = 'list-group-item d-flex justify-content-between align-items-start';
       li.innerHTML =
         '<div><strong>' + escapeHtml(item.title) + '</strong>' + photoBadge + '<br><span class="text-muted small">' +
-        escapeHtml(item.text) + '</span><br><small>' + formatDate(item.date) + ' · ' + statusText + '</small></div>' +
+        escapeHtml((item.text || '').replace(/<[^>]+>/g, '')) + '</span><br><small>' + formatDate(item.date) + ' · ' + statusText + '</small></div>' +
         '<div class="d-flex gap-1"><button type="button" class="btn btn-outline-primary btn-sm admin-btn-edit-competition" data-id="' + item.id + '" aria-label="Редактировать">Редактировать</button>' +
         '<button type="button" class="btn btn-outline-danger btn-sm admin-btn-delete" data-id="' + item.id + '" data-type="competition" aria-label="Удалить">Удалить</button></div>';
       list.appendChild(li);
@@ -2433,7 +2433,7 @@
         editCompetitionCurrentImageUrl = item.imageUrl || (item.imageDataUrl ? item.imageDataUrl : null);
         document.getElementById('edit-competition-id').value = id;
         document.getElementById('edit-competition-title').value = item.title || '';
-        document.getElementById('edit-competition-text').value = item.text || '';
+        setNewsTextToEditor(document.getElementById('edit-competition-text'), item.text || '');
         document.getElementById('edit-competition-date').value = item.date || '';
         document.getElementById('edit-competition-status').value = item.status === 'past' ? 'past' : 'upcoming';
         var urlEl = document.getElementById('edit-competition-image-url');
@@ -3035,14 +3035,24 @@
       });
     }
     if (competitionImageClear) competitionImageClear.addEventListener('click', clearCompetitionImage);
+
+    var competitionTextEl = document.getElementById('competition-text');
+    var competitionToolbar = competitionTextEl && competitionTextEl.previousElementSibling;
+    initNewsEditorToolbar(
+      competitionTextEl,
+      competitionToolbar && competitionToolbar.querySelector('.admin-edit-emoji'),
+      document.getElementById('competition-emoji-picker')
+    );
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var title = document.getElementById('competition-title').value.trim();
-      var text = document.getElementById('competition-text').value.trim();
+      var text = getNewsTextFromEditor(competitionTextEl);
       var imageUrl = pendingCompetitionImageUrl || (competitionImageUrl && competitionImageUrl.value.trim()) || '';
       var date = document.getElementById('competition-date').value;
       var status = document.getElementById('competition-status').value;
-      if (!title || !text || !date) return;
+      if (!title || !date) return;
+      if (!text || !text.replace(/<[^>]+>/g, '').trim()) return;
       var comps = getCompetitions();
       var id = nextId(comps);
       var item = { id: id, title: title, text: text, date: date, status: status === 'past' ? 'past' : 'upcoming' };
@@ -3050,7 +3060,7 @@
       comps.push(item);
       setCompetitions(comps);
       document.getElementById('competition-title').value = '';
-      document.getElementById('competition-text').value = '';
+      setNewsTextToEditor(competitionTextEl, '');
       clearCompetitionImage();
       form.reset();
       if (dateInput) dateInput.value = date;
@@ -3086,13 +3096,23 @@
       });
     }
     if (editCompetitionImageClear) editCompetitionImageClear.addEventListener('click', clearEditCompetitionImage);
+
+    var editCompetitionTextEl = document.getElementById('edit-competition-text');
+    var editCompetitionToolbar = editCompetitionTextEl && editCompetitionTextEl.previousElementSibling;
+    initNewsEditorToolbar(
+      editCompetitionTextEl,
+      editCompetitionToolbar && editCompetitionToolbar.querySelector('.admin-edit-emoji'),
+      document.getElementById('edit-competition-emoji-picker')
+    );
+
     saveBtn.addEventListener('click', function () {
       var id = parseInt(document.getElementById('edit-competition-id').value, 10);
       var title = document.getElementById('edit-competition-title').value.trim();
-      var text = document.getElementById('edit-competition-text').value.trim();
+      var text = getNewsTextFromEditor(editCompetitionTextEl);
       var date = document.getElementById('edit-competition-date').value;
       var status = document.getElementById('edit-competition-status').value;
-      if (!title || !text || !date) return;
+      if (!title || !date) return;
+      if (!text || !text.replace(/<[^>]+>/g, '').trim()) return;
       var comps = getCompetitions();
       var idx = comps.findIndex(function (c) { return c.id === id; });
       if (idx === -1) return;
@@ -3110,7 +3130,7 @@
     modalEl.addEventListener('hidden.bs.modal', function () {
       document.getElementById('edit-competition-id').value = '';
       document.getElementById('edit-competition-title').value = '';
-      document.getElementById('edit-competition-text').value = '';
+      setNewsTextToEditor(document.getElementById('edit-competition-text'), '');
       document.getElementById('edit-competition-date').value = '';
       document.getElementById('edit-competition-status').value = 'upcoming';
       clearEditCompetitionImage();

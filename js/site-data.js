@@ -562,7 +562,7 @@
         '<time datetime="' + escapeAttr(item.date) + '">' + formatDate(item.date) + '</time>' +
         '</div>' +
         '<h3 class="competition-card-title">' + escapeHtml(item.title) + '</h3>' +
-        '<p class="competition-card-text">' + escapeHtml(item.text) + '</p>' +
+        '<p class="competition-card-text">' + sanitizeNewsHtml((item.text || '').replace(/\n/g, '<br>')) + '</p>' +
         '<button type="button" class="competition-card-toggle" aria-expanded="false">Читать полностью</button>' +
         '<span class="competition-card-badge ' + badgeClass + '">' + escapeHtml(badgeText) + '</span>' +
         '</div>';
