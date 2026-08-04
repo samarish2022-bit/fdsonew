@@ -5,3 +5,5 @@ dist
 build
 .env
 .DS_Store
+*.pem
+*.key

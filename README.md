@@ -23,11 +23,14 @@
 Требуется установленный Node.js (LTS).
 
 ```bash
+cp .env.example .env   # задайте ADMIN_PASSWORD
 npm install
 npm start
 ```
 
-По умолчанию сервер поднимается на `http://localhost:3000` (или другом порту, указанном в `server.js`).
+По умолчанию сервер поднимается на `http://localhost:3000` (или другом порту, указанном в `PORT`).
+
+Админка: `http://localhost:3000/admin.html` — пароль задаётся только в `.env` (`ADMIN_PASSWORD`), все операции записи требуют токен после входа.
 
 ## Зависимости
 
