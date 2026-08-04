@@ -19,6 +19,62 @@ var UPLOADS_PHOTOS_BASE = path.join(__dirname, 'images', 'uploads', 'photos');
 var UPLOADS_NEWS_BASE = path.join(__dirname, 'images', 'uploads', 'news');
 var UPLOADS_COMPETITIONS_BASE = path.join(__dirname, 'images', 'uploads', 'competitions');
 var UPLOADS_FRIENDS_BASE = path.join(__dirname, 'images', 'uploads', 'friends');
+var UPLOADS_DOCUMENTS_BASE = path.join(__dirname, 'images', 'uploads', 'documents');
+var DOCUMENTS_URL_PREFIX = 'images/uploads/documents/';
+
+var DOCUMENT_MIME_EXT = {
+  'application/pdf': 'pdf',
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  'application/vnd.ms-excel': 'xls',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+  'text/plain': 'txt'
+};
+
+function extFromDocumentMime(mime) {
+  if (!mime) return 'bin';
+  var base = String(mime).split(';')[0].trim().toLowerCase();
+  if (DOCUMENT_MIME_EXT[base]) return DOCUMENT_MIME_EXT[base];
+  if (base.indexOf('pdf') !== -1) return 'pdf';
+  return 'bin';
+}
+
+function extFromFilename(name) {
+  if (!name || typeof name !== 'string') return '';
+  var i = name.lastIndexOf('.');
+  if (i < 0) return '';
+  return name.slice(i + 1).toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8);
+}
+
+function sanitizeDocumentBasename(name) {
+  var cleaned = String(name || 'document').replace(/[^a-zA-Z0-9._-]/g, '_').replace(/_+/g, '_').slice(0, 60);
+  return cleaned || 'document';
+}
+
+/** Если url — data:…;base64, сохраняет файл и возвращает item с файловым url. */
+function migrateDocumentItem(item, suffix) {
+  var dataUrl = item && item.url;
+  if (!dataUrl || typeof dataUrl !== 'string' || dataUrl.indexOf('data:') !== 0) {
+    return item;
+  }
+  var m = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!m) return item;
+  var ext = extFromDocumentMime(m[1]) || 'bin';
+  if (!fs.existsSync(UPLOADS_DOCUMENTS_BASE)) fs.mkdirSync(UPLOADS_DOCUMENTS_BASE, { recursive: true });
+  var basename = 'doc-' + Date.now() + '-' + (suffix != null ? suffix + '-' : '') + Math.random().toString(36).slice(2, 10) + '.' + ext;
+  var filePath = path.join(UPLOADS_DOCUMENTS_BASE, basename);
+  try {
+    fs.writeFileSync(filePath, Buffer.from(m[2], 'base64'));
+  } catch (e) {
+    console.error('Ошибка записи документа:', e.message);
+    return item;
+  }
+  var out = {};
+  for (var k in item) if (Object.prototype.hasOwnProperty.call(item, k)) out[k] = item[k];
+  out.url = DOCUMENTS_URL_PREFIX + basename;
+  if (!out.meta) out.meta = ext.toUpperCase();
+  return out;
+}
 
 function slugFromCompetition(name) {
   if (!name || typeof name !== 'string') return 'raznoe';
@@ -155,8 +211,16 @@ app.post('/api/save-documents', function (req, res) {
   if (!Array.isArray(req.body)) {
     return res.status(400).json({ error: 'Body must be a JSON array' });
   }
-  var data = req.body;
   try {
+    var data = req.body.map(function (item, idx) {
+      var migrated = migrateDocumentItem(item, idx);
+      return {
+        id: migrated.id,
+        title: migrated.title,
+        url: migrated.url,
+        meta: migrated.meta || undefined
+      };
+    });
     var dir = path.dirname(DOCUMENTS_FILE);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -168,6 +232,33 @@ app.post('/api/save-documents', function (req, res) {
     console.error('Ошибка записи documents.json:', e.message);
     res.status(500).json({ error: e.message });
   }
+});
+
+/** Загрузка документа (PDF/DOC/DOCX). Тело: { fileBase64, filename }. Ответ: { url, meta } */
+app.post('/api/upload-document', function (req, res) {
+  if (req.body == null) return res.status(413).json({ error: 'Payload too large or invalid JSON' });
+  var fileBase64 = req.body.fileBase64;
+  var filename = req.body.filename || 'document';
+  if (!fileBase64 || typeof fileBase64 !== 'string') {
+    return res.status(400).json({ error: 'fileBase64 required' });
+  }
+  var m = fileBase64.match(/^data:([^;]+);base64,(.+)$/);
+  if (!m) return res.status(400).json({ error: 'Invalid base64 file' });
+  var ext = extFromFilename(filename) || extFromDocumentMime(m[1]) || 'bin';
+  if (['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'].indexOf(ext) === -1) {
+    return res.status(400).json({ error: 'Unsupported file type' });
+  }
+  if (!fs.existsSync(UPLOADS_DOCUMENTS_BASE)) fs.mkdirSync(UPLOADS_DOCUMENTS_BASE, { recursive: true });
+  var safeName = sanitizeDocumentBasename(path.basename(filename, path.extname(filename)));
+  var basename = 'doc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10) + '-' + safeName + '.' + ext;
+  var filePath = path.join(UPLOADS_DOCUMENTS_BASE, basename);
+  try {
+    fs.writeFileSync(filePath, Buffer.from(m[2], 'base64'));
+  } catch (e) {
+    console.error('Ошибка записи документа:', e.message);
+    return res.status(500).json({ error: e.message });
+  }
+  res.json({ url: DOCUMENTS_URL_PREFIX + basename, meta: ext.toUpperCase() });
 });
 
 app.get('/api/friends', function (req, res) {

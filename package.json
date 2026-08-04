@@ -4,7 +4,8 @@
   "description": "Сайт Федерации Дартс Самара",
   "scripts": {
     "start": "node server.js",
-    "optimize-hero": "node scripts/optimize-hero.js"
+    "optimize-hero": "node scripts/optimize-hero.js",
+    "migrate-documents": "node scripts/migrate-documents.js"
   },
   "private": true,
   "dependencies": {

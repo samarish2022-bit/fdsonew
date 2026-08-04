@@ -39,7 +39,7 @@
   var pendingPhotoDataUrl = null;
   var pendingPhotoDataUrlFallback = null;
   var pendingPhotoDataUrls = [];
-  var pendingDocumentDataUrl = null;
+  var pendingDocumentFile = null;
   var pendingDocumentMeta = null;
   var pendingEditNewsImageDataUrl = null;
   var pendingEditNewsImageUrl = null;
@@ -51,7 +51,7 @@
   var pendingEditCompetitionImageUrl = null;
   var editCompetitionCurrentImageUrl = null;
   var editCompetitionImageCleared = false;
-  var pendingEditDocumentDataUrl = null;
+  var pendingEditDocumentFile = null;
   var pendingEditDocumentMeta = null;
   var editDocumentCurrentUrl = null;
   var pendingFriendIconDataUrl = null;
@@ -85,6 +85,37 @@
         if (!r.ok) return r.json().then(function (err) { throw new Error(err.error || r.statusText); });
         return r.json();
       });
+    });
+  }
+
+  /** Загрузка документа на сервер. Возвращает { url, meta }. */
+  function uploadDocumentToSite(file) {
+    var origin = (typeof location !== 'undefined' && location.origin && (location.origin.startsWith('http://') || location.origin.startsWith('https://')))
+      ? location.origin
+      : 'http://localhost:3000';
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        fetch(origin + '/api/upload-document', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileBase64: e.target.result, filename: file.name || 'document' })
+        })
+          .then(function (r) {
+            if (!r.ok) {
+              return r.json().catch(function () { return {}; }).then(function (err) {
+                throw new Error(err.error || r.statusText || 'HTTP ' + r.status);
+              });
+            }
+            return r.json();
+          })
+          .then(resolve)
+          .catch(reject);
+      };
+      reader.onerror = function () {
+        reject(new Error('Не удалось прочитать файл'));
+      };
+      reader.readAsDataURL(file);
     });
   }
 
@@ -2542,7 +2573,7 @@
         var docs = getDocuments();
         var item = docs.filter(function (d) { return d.id === id; })[0];
         if (!item) return;
-        pendingEditDocumentDataUrl = null;
+        pendingEditDocumentFile = null;
         pendingEditDocumentMeta = null;
         editDocumentCurrentUrl = item.url || '';
         document.getElementById('edit-doc-id').value = id;
@@ -2553,7 +2584,14 @@
           urlEl.value = (item.url && item.url.indexOf('data:') !== 0) ? item.url : '';
         }
         var filenameEl = document.getElementById('edit-doc-filename');
-        if (filenameEl) filenameEl.textContent = '';
+        if (filenameEl) {
+          if (item.url && item.url.indexOf('data:') !== 0) {
+            var parts = item.url.split('/');
+            filenameEl.textContent = 'Текущий файл: ' + (parts[parts.length - 1] || item.url);
+          } else {
+            filenameEl.textContent = '';
+          }
+        }
         document.getElementById('edit-doc-file').value = '';
         var clearBtn = document.getElementById('edit-doc-clear');
         if (clearBtn) clearBtn.style.display = 'none';
@@ -3277,9 +3315,10 @@
     var docMeta = document.getElementById('doc-meta');
     var docFilename = document.getElementById('doc-filename');
     var docClear = document.getElementById('doc-clear');
+    var submitBtn = form.querySelector('button[type="submit"]');
 
     function clearDocumentUpload() {
-      pendingDocumentDataUrl = null;
+      pendingDocumentFile = null;
       pendingDocumentMeta = null;
       if (docFile) docFile.value = '';
       if (docUrl) docUrl.value = '';
@@ -3292,19 +3331,12 @@
         var file = this.files && this.files[0];
         if (!file) return;
         if (docUrl) docUrl.value = '';
-        var reader = new FileReader();
-        reader.onload = function (e) {
-          pendingDocumentDataUrl = e.target.result;
-          var ext = getFileExtension(file.name);
-          pendingDocumentMeta = ext || 'PDF';
-          if (docMeta) docMeta.value = pendingDocumentMeta;
-          if (docFilename) docFilename.textContent = file.name;
-          if (docClear) docClear.style.display = 'inline';
-        };
-        reader.onerror = function () {
-          alert('Не удалось прочитать файл.');
-        };
-        reader.readAsDataURL(file);
+        pendingDocumentFile = file;
+        var ext = getFileExtension(file.name);
+        pendingDocumentMeta = ext || 'PDF';
+        if (docMeta) docMeta.value = pendingDocumentMeta;
+        if (docFilename) docFilename.textContent = file.name;
+        if (docClear) docClear.style.display = 'inline';
       });
     }
     if (docClear) docClear.addEventListener('click', function () {
@@ -3316,31 +3348,51 @@
       e.preventDefault();
       var titleEl = document.getElementById('doc-title');
       var title = titleEl && titleEl.value.trim();
-      var url = pendingDocumentDataUrl || (docUrl && docUrl.value.trim()) || '';
+      var externalUrl = (docUrl && docUrl.value.trim()) || '';
       var meta = (docMeta && docMeta.value.trim()) || pendingDocumentMeta || 'PDF';
       if (!title) return;
-      if (!url) {
+      if (!pendingDocumentFile && !externalUrl) {
         alert('Укажите ссылку на файл или загрузите документ с компьютера.');
         return;
       }
-      var docs = getDocuments();
-      if (!Array.isArray(docs)) docs = [];
-      var id = nextId(docs);
-      docs.push({ id: id, title: title, url: url, meta: meta });
-      try {
-        setDocuments(docs);
-      } catch (err) {
-        if (err && err.name === 'QuotaExceededError') {
-          alert('Не удалось сохранить документ: превышен лимит хранилища. Попробуйте документ меньшего размера или укажите ссылку вместо загрузки файла.');
-        } else {
-          alert('Ошибка при сохранении: ' + (err && err.message ? err.message : 'неизвестная ошибка'));
+
+      function finish(url, finalMeta) {
+        var docs = getDocuments();
+        if (!Array.isArray(docs)) docs = [];
+        var id = nextId(docs);
+        docs.push({ id: id, title: title, url: url, meta: finalMeta || meta });
+        try {
+          setDocuments(docs);
+        } catch (err) {
+          if (err && err.name === 'QuotaExceededError') {
+            alert('Не удалось сохранить документ: превышен лимит хранилища. Попробуйте указать ссылку вместо загрузки файла.');
+          } else {
+            alert('Ошибка при сохранении: ' + (err && err.message ? err.message : 'неизвестная ошибка'));
+          }
+          return;
         }
+        if (titleEl) titleEl.value = '';
+        if (docMeta) docMeta.value = '';
+        clearDocumentUpload();
+        renderDocumentsList();
+      }
+
+      if (pendingDocumentFile) {
+        if (submitBtn) submitBtn.disabled = true;
+        uploadDocumentToSite(pendingDocumentFile)
+          .then(function (res) {
+            finish(res.url, meta || res.meta || 'PDF');
+          })
+          .catch(function (err) {
+            alert('Не удалось загрузить файл на сервер: ' + (err && err.message ? err.message : 'ошибка') +
+              '. Запустите сервер (npm start) и откройте админку по http://localhost:3000/admin.html');
+          })
+          .then(function () {
+            if (submitBtn) submitBtn.disabled = false;
+          });
         return;
       }
-      if (titleEl) titleEl.value = '';
-      if (docMeta) docMeta.value = '';
-      clearDocumentUpload();
-      renderDocumentsList();
+      finish(externalUrl, meta);
     });
   }
 
@@ -3355,7 +3407,7 @@
     if (!saveBtn || !modalEl) return;
 
     function clearEditDocumentUpload() {
-      pendingEditDocumentDataUrl = null;
+      pendingEditDocumentFile = null;
       pendingEditDocumentMeta = null;
       if (editDocFile) editDocFile.value = '';
       if (editDocFilename) editDocFilename.textContent = '';
@@ -3367,23 +3419,18 @@
         var file = this.files && this.files[0];
         if (!file) return;
         if (editDocUrl) editDocUrl.value = '';
-        var reader = new FileReader();
-        reader.onload = function (e) {
-          pendingEditDocumentDataUrl = e.target.result;
-          var ext = getFileExtension(file.name);
-          pendingEditDocumentMeta = ext || 'PDF';
-          if (editDocMeta) editDocMeta.value = pendingEditDocumentMeta;
-          if (editDocFilename) editDocFilename.textContent = file.name;
-          if (editDocClear) editDocClear.style.display = 'inline';
-        };
-        reader.onerror = function () {
-          alert('Не удалось прочитать файл.');
-        };
-        reader.readAsDataURL(file);
+        pendingEditDocumentFile = file;
+        var ext = getFileExtension(file.name);
+        pendingEditDocumentMeta = ext || 'PDF';
+        if (editDocMeta) editDocMeta.value = pendingEditDocumentMeta;
+        if (editDocFilename) editDocFilename.textContent = file.name;
+        if (editDocClear) editDocClear.style.display = 'inline';
       });
     }
     if (editDocClear) editDocClear.addEventListener('click', function () {
       clearEditDocumentUpload();
+      editDocumentCurrentUrl = null;
+      if (editDocUrl) editDocUrl.value = '';
     });
 
     saveBtn.addEventListener('click', function () {
@@ -3393,19 +3440,38 @@
       var docs = getDocuments();
       var idx = docs.findIndex(function (d) { return d.id === id; });
       if (idx === -1) return;
-      var url = pendingEditDocumentDataUrl || (editDocUrl && editDocUrl.value.trim()) || editDocumentCurrentUrl || '';
+      var externalUrl = (editDocUrl && editDocUrl.value.trim()) || '';
       var meta = (editDocMeta && editDocMeta.value.trim()) || pendingEditDocumentMeta || docs[idx].meta || 'PDF';
-      if (!url) {
-        alert('Укажите ссылку, загрузите новый файл или оставьте текущий документ (не удаляйте URL и не нажимайте «Убрать» для текущего файла).');
+
+      function finish(url, finalMeta) {
+        if (!url) {
+          alert('Укажите ссылку, загрузите новый файл или оставьте текущий документ.');
+          return;
+        }
+        docs[idx] = { id: id, title: title, url: url, meta: finalMeta || meta };
+        setDocuments(docs);
+        renderDocumentsList();
+        if (modalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+          var modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+        }
+      }
+
+      if (pendingEditDocumentFile) {
+        saveBtn.disabled = true;
+        uploadDocumentToSite(pendingEditDocumentFile)
+          .then(function (res) {
+            finish(res.url, meta || res.meta || 'PDF');
+          })
+          .catch(function (err) {
+            alert('Не удалось загрузить файл на сервер: ' + (err && err.message ? err.message : 'ошибка'));
+          })
+          .then(function () {
+            saveBtn.disabled = false;
+          });
         return;
       }
-      docs[idx] = { id: id, title: title, url: url, meta: meta };
-      setDocuments(docs);
-      renderDocumentsList();
-      if (modalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-        var modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) modal.hide();
-      }
+      finish(externalUrl || editDocumentCurrentUrl || '', meta);
     });
 
     modalEl.addEventListener('hidden.bs.modal', function () {
