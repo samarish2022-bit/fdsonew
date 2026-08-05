@@ -32,6 +32,12 @@ npm start
 
 Админка: `http://localhost:3000/admin.html` — пароль задаётся только в `.env` (`ADMIN_PASSWORD`), все операции записи требуют токен после входа.
 
+## Тестовый стенд
+
+Публичный адрес: **https://fdso.rockchat1.ru** (Let's Encrypt, автообновление сертификата).
+
+Подробности деплоя, nginx и SSL: [`docs/DEPLOY.md`](docs/DEPLOY.md). Конфиг nginx: [`deploy/nginx/fdso.conf`](deploy/nginx/fdso.conf).
+
 ## Зависимости
 
 Основные зависимости описаны в `package.json`:
