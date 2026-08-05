@@ -88,7 +88,16 @@
     function go() {
       if (userScrolled || Date.now() > stopAt) return;
       var target = document.querySelector(hash);
-      if (target) scrollToSection(target, 'auto');
+      if (!target) return;
+      scrollToSection(target, 'auto');
+
+      // Пока контент выше догружается, max-scroll короче цели — проверяем и повторяем
+      var title = target.querySelector('.container > .section-title') || target.querySelector('.section-title');
+      var el = title || target;
+      var delta = el.getBoundingClientRect().top - getHeaderOffset();
+      if (Math.abs(delta) > 24 && Date.now() < stopAt) {
+        setTimeout(go, 120);
+      }
     }
 
     go();
