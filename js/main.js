@@ -40,8 +40,15 @@
     updateProgress();
   }
 
+  function getHeaderOffset() {
+    var raw = getComputedStyle(document.documentElement).getPropertyValue('--header-height');
+    var n = parseInt(raw, 10);
+    return isNaN(n) ? 86 : n;
+  }
+
   /**
    * Скролл к секции (или её заголовку). behavior: 'smooth' | 'auto'
+   * Считаем позицию вручную — надёжнее scrollIntoView при липкой шапке и догрузке карточек.
    */
   function scrollToSection(target, behavior) {
     if (!target) return;
@@ -50,36 +57,65 @@
       target.querySelector('.section-title')
     );
     var el = title || target;
-    el.scrollIntoView({ behavior: behavior || 'smooth', block: 'start' });
+    var top = el.getBoundingClientRect().top + window.pageYOffset - getHeaderOffset();
+    window.scrollTo({ top: Math.max(0, top), behavior: behavior || 'smooth' });
   }
 
   /**
    * Переход с других страниц (rating.html → index.html#competitions):
-   * браузер часто оставляет взгляд наверху из‑за scroll-behavior: smooth / поздней вёрстки.
-   * Явно прокручиваем к якорю после загрузки и ещё раз после отрисовки контента.
+   * карточки новостей/фото подгружаются асинхронно и сдвигают якорь вниз —
+   * поэтому повторяем скролл, пока вёрстка не устаканится (или пользователь не прокрутил сам).
    */
   function initHashScrollOnLoad() {
     var hash = window.location.hash;
     if (!hash || hash === '#') return;
 
-    function go(behavior) {
+    var userScrolled = false;
+    var stopAt = Date.now() + 4000;
+
+    function markUserScroll() {
+      userScrolled = true;
+    }
+    window.addEventListener('wheel', markUserScroll, { passive: true, once: true });
+    window.addEventListener('touchmove', markUserScroll, { passive: true, once: true });
+    window.addEventListener('keydown', function onKey(e) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'PageDown' || e.key === 'PageUp' || e.key === 'Home' || e.key === 'End' || e.key === ' ') {
+        userScrolled = true;
+        window.removeEventListener('keydown', onKey);
+      }
+    });
+
+    function go() {
+      if (userScrolled || Date.now() > stopAt) return;
       var target = document.querySelector(hash);
-      if (target) scrollToSection(target, behavior || 'auto');
+      if (target) scrollToSection(target, 'auto');
     }
 
-    go('auto');
-    requestAnimationFrame(function () {
-      go('auto');
+    go();
+    [50, 100, 200, 400, 700, 1100, 1600, 2200, 3000].forEach(function (ms) {
+      setTimeout(go, ms);
     });
+
     window.addEventListener('load', function () {
-      go('auto');
-      setTimeout(function () {
-        go('auto');
-        if (typeof ScrollTrigger !== 'undefined' && ScrollTrigger.refresh) {
-          ScrollTrigger.refresh();
-        }
-      }, 150);
+      go();
+      setTimeout(go, 200);
+      if (typeof ScrollTrigger !== 'undefined' && ScrollTrigger.refresh) {
+        ScrollTrigger.refresh();
+      }
     });
+
+    window.addEventListener('fdso:content-ready', go);
+
+    var main = document.querySelector('main');
+    if (main && typeof ResizeObserver !== 'undefined') {
+      var ro = new ResizeObserver(function () {
+        go();
+      });
+      ro.observe(main);
+      setTimeout(function () {
+        ro.disconnect();
+      }, 4000);
+    }
   }
 
   /**

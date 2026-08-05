@@ -956,6 +956,14 @@
   function refreshIcons() {
     if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') lucide.createIcons();
   }
+
+  /** Сигнал главной: контент перерисован — можно доскроллить к #якорю с другой страницы */
+  function notifyContentReady() {
+    try {
+      window.dispatchEvent(new CustomEvent('fdso:content-ready'));
+    } catch (err) { /* ignore */ }
+  }
+
   function init() {
     renderAdminNews();
     renderAdminPhotos();
@@ -963,24 +971,33 @@
     renderFriendsCarousel();
     renderCompetitions();
     refreshIcons();
-    loadNewsFromFile().then(function () {
+    notifyContentReady();
+
+    var newsP = loadNewsFromFile().then(function () {
       renderAdminNews();
       refreshIcons();
     }).catch(function () { renderAdminNews(); refreshIcons(); });
-    loadCompetitionsFromFile().then(function () {
+    var competitionsP = loadCompetitionsFromFile().then(function () {
       renderCompetitions();
       refreshIcons();
     }).catch(function () { renderCompetitions(); refreshIcons(); });
-    loadDocumentsFromFile().then(function () {
+    var documentsP = loadDocumentsFromFile().then(function () {
       renderAdminDocuments();
     }).catch(function () { renderAdminDocuments(); });
-    loadFriendsFromFile().then(function () {
+    var friendsP = loadFriendsFromFile().then(function () {
       renderFriendsCarousel();
     }).catch(function () { renderFriendsCarousel(); });
-    loadPhotosFromFile().then(function () {
+    var photosP = loadPhotosFromFile().then(function () {
       renderAdminPhotos();
       refreshIcons();
     }).catch(function () { renderAdminPhotos(); refreshIcons(); });
+
+    Promise.all([newsP, competitionsP, documentsP, friendsP, photosP]).then(function () {
+      notifyContentReady();
+    }).catch(function () {
+      notifyContentReady();
+    });
+
     var isGalleryPage = typeof window.location !== 'undefined' &&
       (window.location.pathname.indexOf('gallery') !== -1 || window.location.href.indexOf('gallery') !== -1);
     if (isGalleryPage) {
