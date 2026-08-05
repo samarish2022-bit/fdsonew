@@ -393,6 +393,11 @@ main {
   padding-bottom: 40vh;
 }
 
+/* Sections common — 2rem перед названием, зазор между секциями 2rem (padding-bottom 0) */
+.section {
+  padding: 2rem 0 0 0;
+}
+
 .section-title {
   font-size: clamp(2rem, 4vw, 2.75rem);
   font-weight: 600;
