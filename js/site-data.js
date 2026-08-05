@@ -976,24 +976,32 @@
     var newsP = loadNewsFromFile().then(function () {
       renderAdminNews();
       refreshIcons();
-    }).catch(function () { renderAdminNews(); refreshIcons(); });
+      notifyContentReady();
+    }).catch(function () { renderAdminNews(); refreshIcons(); notifyContentReady(); });
     var competitionsP = loadCompetitionsFromFile().then(function () {
       renderCompetitions();
       refreshIcons();
-    }).catch(function () { renderCompetitions(); refreshIcons(); });
+      notifyContentReady();
+    }).catch(function () { renderCompetitions(); refreshIcons(); notifyContentReady(); });
     var documentsP = loadDocumentsFromFile().then(function () {
       renderAdminDocuments();
-    }).catch(function () { renderAdminDocuments(); });
+      notifyContentReady();
+    }).catch(function () { renderAdminDocuments(); notifyContentReady(); });
     var friendsP = loadFriendsFromFile().then(function () {
       renderFriendsCarousel();
-    }).catch(function () { renderFriendsCarousel(); });
+      notifyContentReady();
+    }).catch(function () { renderFriendsCarousel(); notifyContentReady(); });
     var photosP = loadPhotosFromFile().then(function () {
       renderAdminPhotos();
       refreshIcons();
-    }).catch(function () { renderAdminPhotos(); refreshIcons(); });
+      notifyContentReady();
+    }).catch(function () { renderAdminPhotos(); refreshIcons(); notifyContentReady(); });
 
     Promise.all([newsP, competitionsP, documentsP, friendsP, photosP]).then(function () {
       notifyContentReady();
+      // картинки в карточках могут догрузиться чуть позже
+      setTimeout(notifyContentReady, 300);
+      setTimeout(notifyContentReady, 1000);
     }).catch(function () {
       notifyContentReady();
     });
