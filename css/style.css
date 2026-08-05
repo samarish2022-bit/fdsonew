@@ -388,9 +388,9 @@ body {
   transform: scale(0.98);
 }
 
-/* Sections common — 2rem перед названием, зазор между секциями 2rem (padding-bottom 0) */
-.section {
-  padding: 2rem 0 0 0;
+/* Чтобы якоря внизу страницы (#documents, #contacts) можно было подтянуть под шапку */
+main {
+  padding-bottom: 40vh;
 }
 
 .section-title {
