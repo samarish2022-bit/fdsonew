@@ -43,7 +43,18 @@
   /**
    * Smooth scroll for anchor links (fallback if CSS scroll-behavior not enough)
    * Ссылки внутри мобильного меню не обрабатываем — их закрытие и переход в initMobileMenuClose
+   * Скроллим к заголовку секции (h2.section-title), чтобы название было видно под шапкой.
    */
+  function scrollToSection(target) {
+    if (!target) return;
+    var title = target.querySelector && (
+      target.querySelector('.container > .section-title') ||
+      target.querySelector('.section-title')
+    );
+    var el = title || target;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function initSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
       if (anchor.closest('#offcanvasNav')) return;
@@ -54,7 +65,7 @@
 
       anchor.addEventListener('click', function (e) {
         e.preventDefault();
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        scrollToSection(target);
       });
     });
   }
@@ -79,11 +90,11 @@
           if (offcanvas) {
             offcanvasEl.addEventListener('hidden.bs.offcanvas', function once() {
               offcanvasEl.removeEventListener('hidden.bs.offcanvas', once);
-              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              scrollToSection(target);
             });
             offcanvas.hide();
           } else {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            scrollToSection(target);
           }
         } else if (href) {
           window.location.href = href;

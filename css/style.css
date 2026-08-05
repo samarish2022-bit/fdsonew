@@ -400,12 +400,15 @@ body {
   margin-top: 0;
   margin-bottom: 0.5rem;
   color: var(--color-text);
+  /* Якорь/скролл к секции: название не прячется под шапкой */
+  scroll-margin-top: var(--header-height, 86px);
 }
 
 /* Названия разделов всегда видимы (не зависят от GSAP / прыжка по якорю) */
+h2.section-title,
 .section-title.animate-item {
-  opacity: 1;
-  transform: none;
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 .section-lead {
@@ -430,11 +433,11 @@ body {
   padding-bottom: 0;
 }
 
-/* Зазор до следующего раздела — padding-bottom у кнопки; иначе обычный padding-top секции */
-.section-news:has(#news-more-wrap:not(:empty)) + .section-competitions,
-.section-competitions:has(#competitions-more-wrap:not(:empty)) + .section-photo {
-  padding-top: 0;
-}
+/*
+ * Не обнуляем padding-top у Соревнований/Фото: иначе при переходе из меню
+ * заголовок оказывается под липкой шапкой (у Новостей padding-top остаётся).
+ * Зазор после кнопки «Все …» задаёт .section-more-wrap { padding-bottom }.
+ */
 
 /* Секция новостей и строка карточек — явно видимы на всех экранах */
 .section-news,
@@ -1878,12 +1881,6 @@ html.legal-embed .legal-main {
     padding-bottom: 0;
   }
 
-  /* После кнопок «Все…» отступ только у .section-more-wrap (равный margin-top) */
-  .section-news:has(#news-more-wrap:not(:empty)) + .section-competitions,
-  .section-competitions:has(#competitions-more-wrap:not(:empty)) + .section-photo {
-    padding-top: 0;
-  }
-
   .section-documents {
     padding-bottom: 2rem;
   }
@@ -2070,15 +2067,10 @@ html.legal-embed .legal-main {
     padding-bottom: 1.5rem;
   }
 
-  /* После кнопок «Все…» отступ только у .section-more-wrap */
+  /* После кнопок «Все…» нижний отступ секции сбрасываем — его даёт .section-more-wrap */
   .section-news,
   .section-competitions {
     padding-bottom: 0;
-  }
-
-  .section-news:has(#news-more-wrap:not(:empty)) + .section-competitions,
-  .section-competitions:has(#competitions-more-wrap:not(:empty)) + .section-photo {
-    padding-top: 0;
   }
 
   .section-more-wrap {
