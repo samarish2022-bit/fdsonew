@@ -71,7 +71,7 @@
     if (!hash || hash === '#') return;
 
     var userScrolled = false;
-    var stopAt = Date.now() + 4000;
+    var stopAt = Date.now() + 8000;
 
     function markUserScroll() {
       userScrolled = true;
@@ -92,19 +92,35 @@
     }
 
     go();
-    [50, 100, 200, 400, 700, 1100, 1600, 2200, 3000].forEach(function (ms) {
+    [50, 100, 200, 400, 700, 1100, 1600, 2200, 3000, 4000, 5500, 7000].forEach(function (ms) {
       setTimeout(go, ms);
     });
 
     window.addEventListener('load', function () {
       go();
       setTimeout(go, 200);
+      setTimeout(go, 800);
       if (typeof ScrollTrigger !== 'undefined' && ScrollTrigger.refresh) {
         ScrollTrigger.refresh();
       }
     });
 
-    window.addEventListener('fdso:content-ready', go);
+    window.addEventListener('fdso:content-ready', function () {
+      go();
+      setTimeout(go, 100);
+      setTimeout(go, 400);
+    });
+
+    // Картинки выше якоря меняют высоту — доскролливаем
+    document.querySelectorAll('main img').forEach(function (img) {
+      if (!img.complete) {
+        img.addEventListener('load', go, { once: true });
+        img.addEventListener('error', go, { once: true });
+      }
+    });
+    document.addEventListener('load', function onImg(e) {
+      if (e.target && e.target.tagName === 'IMG') go();
+    }, true);
 
     var main = document.querySelector('main');
     if (main && typeof ResizeObserver !== 'undefined') {
@@ -114,7 +130,7 @@
       ro.observe(main);
       setTimeout(function () {
         ro.disconnect();
-      }, 4000);
+      }, 8000);
     }
   }
 
