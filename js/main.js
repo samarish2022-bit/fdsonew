@@ -105,6 +105,13 @@
     }
 
     gsap.utils.toArray('.animate-item').forEach(function (el) {
+      // Заголовки разделов всегда на месте — иначе при переходе из меню остаются opacity: 0
+      if (el.classList.contains('section-title')) {
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+        return;
+      }
+
       gsap.fromTo(
         el,
         { opacity: 0, y: 24 },
