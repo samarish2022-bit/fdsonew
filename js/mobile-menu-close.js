@@ -13,14 +13,31 @@
       link.addEventListener('click', function (e) {
         e.preventDefault();
         var href = link.getAttribute('href');
-        var offcanvas = typeof bootstrap !== 'undefined' && bootstrap.Offcanvas && bootstrap.Offcanvas.getInstance(offcanvasEl);
-        if (offcanvas) offcanvas.hide();
+        if (!href) return;
 
-        if (href && href.charAt(0) === '#') {
+        var offcanvas = typeof bootstrap !== 'undefined' && bootstrap.Offcanvas && bootstrap.Offcanvas.getInstance(offcanvasEl);
+
+        function go() {
+          // index.html#competitions и т.п. — полный переход, чтобы якорь не потерялся
+          if (href.charAt(0) !== '#') {
+            window.location.href = href;
+            return;
+          }
           var target = document.querySelector(href);
-          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else if (href) {
-          window.location.href = href;
+          if (target) {
+            var title = target.querySelector('.container > .section-title') || target.querySelector('.section-title');
+            (title || target).scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+
+        if (offcanvas) {
+          offcanvasEl.addEventListener('hidden.bs.offcanvas', function once() {
+            offcanvasEl.removeEventListener('hidden.bs.offcanvas', once);
+            go();
+          });
+          offcanvas.hide();
+        } else {
+          go();
         }
       });
     });

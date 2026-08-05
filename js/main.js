@@ -41,20 +41,51 @@
   }
 
   /**
-   * Smooth scroll for anchor links (fallback if CSS scroll-behavior not enough)
-   * Ссылки внутри мобильного меню не обрабатываем — их закрытие и переход в initMobileMenuClose
-   * Скроллим к заголовку секции (h2.section-title), чтобы название было видно под шапкой.
+   * Скролл к секции (или её заголовку). behavior: 'smooth' | 'auto'
    */
-  function scrollToSection(target) {
+  function scrollToSection(target, behavior) {
     if (!target) return;
     var title = target.querySelector && (
       target.querySelector('.container > .section-title') ||
       target.querySelector('.section-title')
     );
     var el = title || target;
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el.scrollIntoView({ behavior: behavior || 'smooth', block: 'start' });
   }
 
+  /**
+   * Переход с других страниц (rating.html → index.html#competitions):
+   * браузер часто оставляет взгляд наверху из‑за scroll-behavior: smooth / поздней вёрстки.
+   * Явно прокручиваем к якорю после загрузки и ещё раз после отрисовки контента.
+   */
+  function initHashScrollOnLoad() {
+    var hash = window.location.hash;
+    if (!hash || hash === '#') return;
+
+    function go(behavior) {
+      var target = document.querySelector(hash);
+      if (target) scrollToSection(target, behavior || 'auto');
+    }
+
+    go('auto');
+    requestAnimationFrame(function () {
+      go('auto');
+    });
+    window.addEventListener('load', function () {
+      go('auto');
+      setTimeout(function () {
+        go('auto');
+        if (typeof ScrollTrigger !== 'undefined' && ScrollTrigger.refresh) {
+          ScrollTrigger.refresh();
+        }
+      }, 150);
+    });
+  }
+
+  /**
+   * Smooth scroll for same-page anchor links (#news и т.п.)
+   * Ссылки внутри мобильного меню — в initMobileMenuClose
+   */
   function initSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
       if (anchor.closest('#offcanvasNav')) return;
@@ -65,14 +96,17 @@
 
       anchor.addEventListener('click', function (e) {
         e.preventDefault();
-        scrollToSection(target);
+        if (history.pushState) {
+          history.pushState(null, '', href);
+        }
+        scrollToSection(target, 'smooth');
       });
     });
   }
 
   /**
-   * Мобильное меню: по клику на пункт — закрыть меню и выполнить переход/скролл.
-   * Скролл выполняется после полного закрытия offcanvas, чтобы заголовок секции оказался сразу под шапкой (учитывается scroll-margin-top в CSS).
+   * Мобильное меню: закрыть offcanvas и перейти/проскроллить.
+   * Ссылки на другие страницы (index.html#…) — всегда полный переход, не скролл на месте.
    */
   function initMobileMenuClose() {
     var offcanvasEl = document.getElementById('offcanvasNav');
@@ -82,22 +116,35 @@
       link.addEventListener('click', function (e) {
         e.preventDefault();
         var href = link.getAttribute('href');
-        var hash = href && href.indexOf('#') !== -1 ? href.slice(href.indexOf('#')) : '';
+        if (!href) return;
 
-        if (hash && document.querySelector(hash)) {
-          var target = document.querySelector(hash);
-          var offcanvas = typeof bootstrap !== 'undefined' && bootstrap.Offcanvas && bootstrap.Offcanvas.getInstance(offcanvasEl);
+        var offcanvas = typeof bootstrap !== 'undefined' && bootstrap.Offcanvas && bootstrap.Offcanvas.getInstance(offcanvasEl);
+
+        // Другая страница или тот же файл с путём — полный переход (сохраняет #якорь)
+        if (href.charAt(0) !== '#') {
           if (offcanvas) {
             offcanvasEl.addEventListener('hidden.bs.offcanvas', function once() {
               offcanvasEl.removeEventListener('hidden.bs.offcanvas', once);
-              scrollToSection(target);
+              window.location.href = href;
             });
             offcanvas.hide();
           } else {
-            scrollToSection(target);
+            window.location.href = href;
           }
-        } else if (href) {
-          window.location.href = href;
+          return;
+        }
+
+        var target = document.querySelector(href);
+        if (target) {
+          if (offcanvas) {
+            offcanvasEl.addEventListener('hidden.bs.offcanvas', function once() {
+              offcanvasEl.removeEventListener('hidden.bs.offcanvas', once);
+              scrollToSection(target, 'smooth');
+            });
+            offcanvas.hide();
+          } else {
+            scrollToSection(target, 'smooth');
+          }
         }
       });
     });
@@ -175,6 +222,7 @@
     initMobileMenuClose();
     initScrollAnimations();
     initHeroAnimation();
+    initHashScrollOnLoad();
   }
 
   if (document.readyState === 'loading') {
