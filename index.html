@@ -8,12 +8,16 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" href="images/fdso_title300bd.png" type="image/png">
   <!--
-    Переход с news.html / rating.html на index.html#секция:
-    до подгрузки карточек не показываем «пустые» заголовки друг под другом.
+    Главная: секции без .is-ready скрыты (см. css), чтобы не мелькали пустые заголовки.
+    При заходе с #якорем дополнительно убираем hash до готовности данных — иначе браузер
+    сразу прыгает к пустой секции.
   -->
   <style>
+    .page-home main > .section:not(.is-ready) {
+      display: none !important;
+    }
     html.page-booting { overflow: hidden; }
-    html.page-booting main { opacity: 0 !important; pointer-events: none; }
+    html.page-booting main { visibility: hidden !important; }
   </style>
   <script>
     (function () {
@@ -23,13 +27,18 @@
         '#competitions': 1,
         '#photo': 1,
         '#documents': 1,
-        '#friends': 1
+        '#friends': 1,
+        '#contacts': 1
       };
       if (!asyncSections[hash]) return;
       try {
         if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-      } catch (e) { /* ignore */ }
+      } catch (e1) { /* ignore */ }
+      window.__FDSO_PENDING_HASH = hash;
       document.documentElement.classList.add('page-booting');
+      try {
+        history.replaceState(null, '', location.pathname + location.search);
+      } catch (e2) { /* ignore */ }
       window.scrollTo(0, 0);
     })();
   </script>
@@ -38,7 +47,7 @@
   <!-- Custom styles -->
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="page-home">
   <!-- Progress bar -->
   <div class="progress-bar" id="progressBar" aria-hidden="true"></div>
 

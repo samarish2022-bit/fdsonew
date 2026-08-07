@@ -71,20 +71,36 @@
     root.classList.add('page-ready');
   }
 
+  function restorePendingHash() {
+    var pending = window.__FDSO_PENDING_HASH;
+    if (!pending) return pending;
+    try {
+      history.replaceState(null, '', location.pathname + location.search + pending);
+    } catch (err) { /* ignore */ }
+    window.__FDSO_PENDING_HASH = null;
+    return pending;
+  }
+
+  function sectionHasContent(sectionEl) {
+    if (!sectionEl) return false;
+    return !!sectionEl.querySelector(
+      '#news-row > *, #competitions-row > *, #documents-row > *, #photo-gallery-container > *, #friends-carousel > *, .contact-link, .social-links'
+    );
+  }
+
   /**
    * Переход с других страниц (rating.html → index.html#competitions):
-   * карточки новостей/фото подгружаются асинхронно и сдвигают якорь вниз —
-   * поэтому сначала ждём данные (page-booting), потом повторяем скролл,
-   * пока вёрстка не устаканится (или пользователь не прокрутил сам).
+   * карточки подгружаются асинхронно. Hash временно снят в <head>, секции без
+   * .is-ready скрыты CSS — ждём готовности целевой секции, затем скролл.
    */
   function initHashScrollOnLoad() {
-    var hash = window.location.hash;
+    var hash = window.__FDSO_PENDING_HASH || window.location.hash;
     if (!hash || hash === '#') return;
 
     var userScrolled = false;
-    var stopAt = Date.now() + 8000;
+    var stopAt = Date.now() + 10000;
     var revealed = !document.documentElement.classList.contains('page-booting');
-    var settleTimer = null;
+    var waiting = !revealed;
 
     function markUserScroll() {
       userScrolled = true;
@@ -105,7 +121,6 @@
       if (!target) return;
       scrollToSection(target, 'auto');
 
-      // Пока контент выше догружается, max-scroll короче цели — проверяем и повторяем
       var title = target.querySelector('.container > .section-title') || target.querySelector('.section-title');
       var el = title || target;
       var delta = el.getBoundingClientRect().top - getHeaderOffset();
@@ -115,13 +130,14 @@
     }
 
     function startScrollPass() {
-      if (revealed) {
+      if (revealed && !waiting) {
         go();
         return;
       }
+      waiting = false;
+      restorePendingHash();
       revealed = true;
       revealBootedPage();
-      // После показа main — сразу к якорю, затем доводка по мере догрузки картинок
       requestAnimationFrame(function () {
         go();
         requestAnimationFrame(go);
@@ -131,31 +147,36 @@
       });
     }
 
-    function onContentSettled() {
-      if (settleTimer) {
-        clearTimeout(settleTimer);
-        settleTimer = null;
+    function tryReveal() {
+      if (!waiting) return;
+      var target = document.querySelector(hash);
+      // Целевая секция должна быть и с классом is-ready, и с контентом
+      if (target && target.classList.contains('is-ready') && sectionHasContent(target)) {
+        startScrollPass();
+        return true;
       }
-      startScrollPass();
+      return false;
     }
 
-    // Пока page-booting — не скроллим к пустым секциям; ждём данные (или таймаут)
-    if (!revealed) {
-      settleTimer = setTimeout(onContentSettled, 2500);
-      window.addEventListener('fdso:content-settled', onContentSettled, { once: true });
-      // На случай старого кэша без события settled — после полной готовности тоже
-      window.addEventListener('fdso:content-ready', function onReady() {
-        // Не снимаем booting на ранних пустых рендерах; только если секция уже с контентом
-        var target = document.querySelector(hash);
-        if (!target) return;
-        var filled = target.querySelector(
-          '#news-row > *, #competitions-row > *, #documents-row > *, #photo-gallery-container > *, #friends-carousel > *'
-        );
-        if (filled) {
-          window.removeEventListener('fdso:content-ready', onReady);
-          onContentSettled();
-        }
+    if (waiting) {
+      window.addEventListener('fdso:content-settled', function () {
+        startScrollPass();
+      }, { once: true });
+      window.addEventListener('fdso:section-ready', function () {
+        tryReveal();
       });
+      window.addEventListener('fdso:content-ready', function () {
+        tryReveal();
+      });
+      // Страховка: не показываем пустую вёрстку по таймеру — только если секция готова
+      var poll = setInterval(function () {
+        if (!waiting || Date.now() > stopAt) {
+          clearInterval(poll);
+          if (waiting) startScrollPass();
+          return;
+        }
+        tryReveal();
+      }, 100);
     } else {
       go();
       [50, 100, 200, 400, 700, 1100, 1600, 2200, 3000, 4000, 5500, 7000].forEach(function (ms) {
@@ -181,7 +202,6 @@
       setTimeout(go, 400);
     });
 
-    // Картинки выше якоря меняют высоту — доскролливаем
     document.querySelectorAll('main img').forEach(function (img) {
       if (!img.complete) {
         img.addEventListener('load', go, { once: true });
@@ -200,7 +220,7 @@
       ro.observe(main);
       setTimeout(function () {
         ro.disconnect();
-      }, 8000);
+      }, 10000);
     }
   }
 

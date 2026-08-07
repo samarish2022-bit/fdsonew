@@ -27,20 +27,25 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Переход на главную с #якорем: скрываем main, пока карточки не подгрузились */
+/*
+ * Главная: секции появляются только после отрисовки данных (.is-ready).
+ * Иначе при медленной сети мелькает стопка пустых заголовков.
+ */
+.page-home main > .section:not(.is-ready) {
+  display: none !important;
+}
+
 html.page-booting {
   scroll-behavior: auto;
   overflow: hidden;
 }
 
 html.page-booting main {
-  opacity: 0;
-  pointer-events: none;
+  visibility: hidden;
 }
 
 html.page-ready main {
-  opacity: 1;
-  transition: opacity 0.18s ease;
+  visibility: visible;
 }
 
 body {
