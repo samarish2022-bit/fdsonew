@@ -62,16 +62,46 @@
   }
 
   /**
+   * Снять «заглушку» перехода с #якорем (пустые заголовки без карточек).
+   */
+  function revealBootedPage() {
+    var root = document.documentElement;
+    if (!root.classList.contains('page-booting')) return;
+    root.classList.remove('page-booting');
+    root.classList.add('page-ready');
+  }
+
+  function restorePendingHash() {
+    var pending = window.__FDSO_PENDING_HASH;
+    if (!pending) return pending;
+    try {
+      history.replaceState(null, '', location.pathname + location.search + pending);
+    } catch (err) { /* ignore */ }
+    window.__FDSO_PENDING_HASH = null;
+    return pending;
+  }
+
+  function sectionHasContent(sectionEl) {
+    if (!sectionEl) return false;
+    return !!sectionEl.querySelector(
+      '#news-row > *, #competitions-row > *, #documents-row > *, #photo-gallery-container > *, #friends-carousel > *, .contact-link, .social-links'
+    );
+  }
+
+  /**
    * Переход с других страниц (rating.html → index.html#competitions):
-   * карточки новостей/фото подгружаются асинхронно и сдвигают якорь вниз —
-   * поэтому повторяем скролл, пока вёрстка не устаканится (или пользователь не прокрутил сам).
+   * карточки подгружаются асинхронно. Hash временно снят в <head>, секции без
+   * .is-ready скрыты CSS — ждём готовности целевой секции, затем скролл.
    */
   function initHashScrollOnLoad() {
-    var hash = window.location.hash;
+    var hash = window.__FDSO_PENDING_HASH || window.location.hash;
     if (!hash || hash === '#') return;
 
     var userScrolled = false;
-    var stopAt = Date.now() + 8000;
+    var stopAt = Date.now() + 10000;
+    var revealed = !document.documentElement.classList.contains('page-booting');
+    var waiting = !revealed;
+    var started = false;
 
     function markUserScroll() {
       userScrolled = true;
@@ -87,11 +117,11 @@
 
     function go() {
       if (userScrolled || Date.now() > stopAt) return;
+      if (!revealed) return;
       var target = document.querySelector(hash);
       if (!target) return;
       scrollToSection(target, 'auto');
 
-      // Пока контент выше догружается, max-scroll короче цели — проверяем и повторяем
       var title = target.querySelector('.container > .section-title') || target.querySelector('.section-title');
       var el = title || target;
       var delta = el.getBoundingClientRect().top - getHeaderOffset();
@@ -100,27 +130,80 @@
       }
     }
 
-    go();
-    [50, 100, 200, 400, 700, 1100, 1600, 2200, 3000, 4000, 5500, 7000].forEach(function (ms) {
-      setTimeout(go, ms);
-    });
+    function startScrollPass() {
+      if (started) {
+        go();
+        return;
+      }
+      started = true;
+      waiting = false;
+      restorePendingHash();
+      revealed = true;
+      revealBootedPage();
+      requestAnimationFrame(function () {
+        go();
+        requestAnimationFrame(go);
+      });
+      [50, 100, 200, 400, 700, 1100, 1600, 2200, 3000, 4000, 5500, 7000].forEach(function (ms) {
+        setTimeout(go, ms);
+      });
+    }
+
+    function tryReveal() {
+      if (!waiting) return;
+      var target = document.querySelector(hash);
+      // Целевая секция должна быть и с классом is-ready, и с контентом
+      if (target && target.classList.contains('is-ready') && sectionHasContent(target)) {
+        startScrollPass();
+        return true;
+      }
+      return false;
+    }
+
+    if (waiting) {
+      window.addEventListener('fdso:content-settled', function () {
+        startScrollPass();
+      }, { once: true });
+      window.addEventListener('fdso:section-ready', function () {
+        tryReveal();
+      });
+      window.addEventListener('fdso:content-ready', function () {
+        tryReveal();
+      });
+      // Страховка: не показываем пустую вёрстку по таймеру — только если секция готова
+      var poll = setInterval(function () {
+        if (!waiting || Date.now() > stopAt) {
+          clearInterval(poll);
+          if (waiting) startScrollPass();
+          return;
+        }
+        tryReveal();
+      }, 100);
+    } else {
+      go();
+      [50, 100, 200, 400, 700, 1100, 1600, 2200, 3000, 4000, 5500, 7000].forEach(function (ms) {
+        setTimeout(go, ms);
+      });
+    }
 
     window.addEventListener('load', function () {
-      go();
-      setTimeout(go, 200);
-      setTimeout(go, 800);
+      if (revealed) {
+        go();
+        setTimeout(go, 200);
+        setTimeout(go, 800);
+      }
       if (typeof ScrollTrigger !== 'undefined' && ScrollTrigger.refresh) {
         ScrollTrigger.refresh();
       }
     });
 
     window.addEventListener('fdso:content-ready', function () {
+      if (!revealed) return;
       go();
       setTimeout(go, 100);
       setTimeout(go, 400);
     });
 
-    // Картинки выше якоря меняют высоту — доскролливаем
     document.querySelectorAll('main img').forEach(function (img) {
       if (!img.complete) {
         img.addEventListener('load', go, { once: true });
@@ -134,12 +217,12 @@
     var main = document.querySelector('main');
     if (main && typeof ResizeObserver !== 'undefined') {
       var ro = new ResizeObserver(function () {
-        go();
+        if (revealed) go();
       });
       ro.observe(main);
       setTimeout(function () {
         ro.disconnect();
-      }, 8000);
+      }, 10000);
     }
   }
 

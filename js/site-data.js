@@ -925,10 +925,16 @@
     var friends = getFriends();
     container.innerHTML = '';
     if (!friends.length) {
-      if (section) section.style.display = 'none';
+      if (section) {
+        section.style.display = 'none';
+        section.classList.add('is-ready');
+      }
       return;
     }
-    if (section) section.style.display = '';
+    if (section) {
+      section.style.display = '';
+      section.classList.add('is-ready');
+    }
     friends.forEach(function (item) {
       var url = (item.url || '').trim() || '#';
       var title = (item.title || '').trim() || 'Ссылка';
@@ -967,46 +973,115 @@
     } catch (err) { /* ignore */ }
   }
 
-  function init() {
-    renderAdminNews();
-    renderAdminPhotos();
-    renderAdminDocuments();
-    renderFriendsCarousel();
-    renderCompetitions();
-    refreshIcons();
-    notifyContentReady();
+  /** Все асинхронные блоки главной отрисованы — можно снять page-booting и показать секцию */
+  function notifyContentSettled() {
+    try {
+      window.dispatchEvent(new CustomEvent('fdso:content-settled'));
+    } catch (err) { /* ignore */ }
+  }
 
-    var newsP = loadNewsFromFile().then(function () {
+  function markSectionReady(sectionId) {
+    var el = document.getElementById(sectionId);
+    if (!el) return;
+    el.classList.add('is-ready');
+    try {
+      window.dispatchEvent(new CustomEvent('fdso:section-ready', { detail: { id: sectionId } }));
+    } catch (err) { /* ignore */ }
+  }
+
+  function isHomePage() {
+    return typeof document !== 'undefined' &&
+      document.body &&
+      document.body.classList.contains('page-home');
+  }
+
+  function init() {
+    var home = isHomePage();
+
+    // На главной не рисуем пустые секции до ответа API — иначе мелькают одни заголовки.
+    // На внутренних страницах (news/competitions/gallery) можно сразу показать кэш.
+    if (!home) {
       renderAdminNews();
-      refreshIcons();
-      notifyContentReady();
-    }).catch(function () { renderAdminNews(); refreshIcons(); notifyContentReady(); });
-    var competitionsP = loadCompetitionsFromFile().then(function () {
+      renderAdminPhotos();
+      renderAdminDocuments();
+      renderFriendsCarousel();
       renderCompetitions();
       refreshIcons();
       notifyContentReady();
-    }).catch(function () { renderCompetitions(); refreshIcons(); notifyContentReady(); });
-    var documentsP = loadDocumentsFromFile().then(function () {
-      renderAdminDocuments();
-      notifyContentReady();
-    }).catch(function () { renderAdminDocuments(); notifyContentReady(); });
-    var friendsP = loadFriendsFromFile().then(function () {
-      renderFriendsCarousel();
-      notifyContentReady();
-    }).catch(function () { renderFriendsCarousel(); notifyContentReady(); });
-    var photosP = loadPhotosFromFile().then(function () {
-      renderAdminPhotos();
+    }
+
+    var newsP = loadNewsFromFile().then(function () {
+      renderAdminNews();
+      markSectionReady('news');
       refreshIcons();
       notifyContentReady();
-    }).catch(function () { renderAdminPhotos(); refreshIcons(); notifyContentReady(); });
+    }).catch(function () {
+      renderAdminNews();
+      markSectionReady('news');
+      refreshIcons();
+      notifyContentReady();
+    });
+    var competitionsP = loadCompetitionsFromFile().then(function () {
+      renderCompetitions();
+      markSectionReady('competitions');
+      refreshIcons();
+      notifyContentReady();
+    }).catch(function () {
+      renderCompetitions();
+      markSectionReady('competitions');
+      refreshIcons();
+      notifyContentReady();
+    });
+    var documentsP = loadDocumentsFromFile().then(function () {
+      renderAdminDocuments();
+      markSectionReady('documents');
+      notifyContentReady();
+    }).catch(function () {
+      renderAdminDocuments();
+      markSectionReady('documents');
+      notifyContentReady();
+    });
+    var friendsP = loadFriendsFromFile().then(function () {
+      renderFriendsCarousel();
+      markSectionReady('friends');
+      notifyContentReady();
+    }).catch(function () {
+      renderFriendsCarousel();
+      markSectionReady('friends');
+      notifyContentReady();
+    });
+    var photosP = loadPhotosFromFile().then(function () {
+      renderAdminPhotos();
+      markSectionReady('photo');
+      refreshIcons();
+      notifyContentReady();
+    }).catch(function () {
+      renderAdminPhotos();
+      markSectionReady('photo');
+      refreshIcons();
+      notifyContentReady();
+    });
 
     Promise.all([newsP, competitionsP, documentsP, friendsP, photosP]).then(function () {
+      markSectionReady('news');
+      markSectionReady('competitions');
+      markSectionReady('photo');
+      markSectionReady('documents');
+      markSectionReady('friends');
+      markSectionReady('contacts');
       notifyContentReady();
-      // картинки в карточках могут догрузиться чуть позже
+      notifyContentSettled();
       setTimeout(notifyContentReady, 300);
       setTimeout(notifyContentReady, 1000);
     }).catch(function () {
+      markSectionReady('news');
+      markSectionReady('competitions');
+      markSectionReady('photo');
+      markSectionReady('documents');
+      markSectionReady('friends');
+      markSectionReady('contacts');
       notifyContentReady();
+      notifyContentSettled();
     });
 
     var isGalleryPage = typeof window.location !== 'undefined' &&

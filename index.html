@@ -7,12 +7,47 @@
   <title>Федерация Дартс Самара — ФДСО</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" href="images/fdso_title300bd.png" type="image/png">
+  <!--
+    Главная: секции без .is-ready скрыты (см. css), чтобы не мелькали пустые заголовки.
+    При заходе с #якорем дополнительно убираем hash до готовности данных — иначе браузер
+    сразу прыгает к пустой секции.
+  -->
+  <style>
+    .page-home main > .section:not(.is-ready) {
+      display: none !important;
+    }
+    html.page-booting { overflow: hidden; }
+    html.page-booting main { visibility: hidden !important; }
+  </style>
+  <script>
+    (function () {
+      var hash = location.hash || '';
+      var asyncSections = {
+        '#news': 1,
+        '#competitions': 1,
+        '#photo': 1,
+        '#documents': 1,
+        '#friends': 1,
+        '#contacts': 1
+      };
+      if (!asyncSections[hash]) return;
+      try {
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      } catch (e1) { /* ignore */ }
+      window.__FDSO_PENDING_HASH = hash;
+      document.documentElement.classList.add('page-booting');
+      try {
+        history.replaceState(null, '', location.pathname + location.search);
+      } catch (e2) { /* ignore */ }
+      window.scrollTo(0, 0);
+    })();
+  </script>
   <!-- Bootstrap 5 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <!-- Custom styles -->
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="page-home">
   <!-- Progress bar -->
   <div class="progress-bar" id="progressBar" aria-hidden="true"></div>
 

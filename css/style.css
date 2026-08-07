@@ -27,6 +27,27 @@ html {
   scroll-behavior: smooth;
 }
 
+/*
+ * Главная: секции появляются только после отрисовки данных (.is-ready).
+ * Иначе при медленной сети мелькает стопка пустых заголовков.
+ */
+.page-home main > .section:not(.is-ready) {
+  display: none !important;
+}
+
+html.page-booting {
+  scroll-behavior: auto;
+  overflow: hidden;
+}
+
+html.page-booting main {
+  visibility: hidden;
+}
+
+html.page-ready main {
+  visibility: visible;
+}
+
 body {
   font-family: var(--font-system);
   font-size: 17px;
