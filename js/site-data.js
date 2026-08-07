@@ -612,11 +612,13 @@
     return wrap;
   }
 
-  /** На главной: 5 последних фото + кнопка в фотогалерею. */
+  /** На главной: 5 последних фото + кнопка «Все фото». */
   function renderHomePhotos(container) {
+    var moreWrap = document.getElementById('photo-more-wrap');
     var photos = getPhotos();
     if (!photos.length) {
       container.innerHTML = '<p class="text-muted">Пока нет фотографий. Добавьте их в разделе «Фотографии» панели администратора.</p>';
+      if (moreWrap) moreWrap.innerHTML = '';
       return;
     }
     var latest = photos.slice(-PHOTO_HOME_LIMIT).reverse();
@@ -628,10 +630,9 @@
       gallery.appendChild(renderPhotoItem(item, 'photo-gallery-item', i));
     });
     container.appendChild(gallery);
-    var btnWrap = document.createElement('div');
-    btnWrap.className = 'photo-gallery-more';
-    btnWrap.innerHTML = '<a href="' + escapeAttr(PHOTO_GALLERY_PAGE) + '" class="btn btn-outline-primary">Перейти в фотогалерею</a>';
-    container.appendChild(btnWrap);
+    if (moreWrap) {
+      moreWrap.innerHTML = '<a href="' + escapeAttr(PHOTO_GALLERY_PAGE) + '" class="btn btn-outline-primary">Все фото</a>';
+    }
   }
 
   /** Строит группы фото по событиям (соревнованиям). Возвращает { keys: string[], groups: {} }. */
