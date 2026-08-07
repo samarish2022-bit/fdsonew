@@ -389,29 +389,81 @@
     return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
   }
 
+  /** Реалистичная мишень дартс (двойное/тройное кольцо, яблочко). */
   function getDartTargetSvg() {
     var cx = 24;
     var cy = 24;
-    var r = 22;
-    var segments = '';
-    for (var i = 0; i < 20; i++) {
-      var a1 = (i * 18) * Math.PI / 180;
-      var a2 = ((i + 1) * 18) * Math.PI / 180;
-      var x1 = cx + r * Math.cos(a1);
-      var y1 = cy + r * Math.sin(a1);
-      var x2 = cx + r * Math.cos(a2);
-      var y2 = cy + r * Math.sin(a2);
-      var fill = (i % 2 === 0) ? '#1d1d1f' : '#e8e8ed';
-      segments += '<polygon points="' + cx + ',' + cy + ' ' + x1.toFixed(2) + ',' + y1.toFixed(2) + ' ' + x2.toFixed(2) + ',' + y2.toFixed(2) + '" fill="' + fill + '"/>';
+    // Радиусы подобраны так, чтобы double/triple читались в 44px
+    var rOut = 23;
+    var rDblIn = 19.4;
+    var rTrpOut = 14;
+    var rTrpIn = 11;
+    var rBullOut = 4.6;
+    var rBullIn = 2.1;
+    var wire = '#111111';
+    var black = '#1a1a1a';
+    var cream = '#f4ecd9';
+    var red = '#d32f2f';
+    var green = '#2e7d32';
+
+    function polar(r, deg) {
+      var rad = (deg * Math.PI) / 180;
+      return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
     }
-    return '<svg class="news-card-dart-target" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-      segments +
-      '<circle cx="' + cx + '" cy="' + cy + '" r="22" fill="none" stroke="#1d1d1f" stroke-width="1.2"/>' +
-      '<circle cx="' + cx + '" cy="' + cy + '" r="18" fill="none" stroke="#1d1d1f" stroke-width="0.8"/>' +
-      '<circle cx="' + cx + '" cy="' + cy + '" r="12" fill="none" stroke="#1d1d1f" stroke-width="0.8"/>' +
-      '<circle cx="' + cx + '" cy="' + cy + '" r="8" fill="#2e7d32"/>' +
-      '<circle cx="' + cx + '" cy="' + cy + '" r="3.5" fill="#c62828"/>' +
-      '</svg>';
+
+    function ringSector(rInner, rOuter, a1, a2) {
+      var p1 = polar(rOuter, a1);
+      var p2 = polar(rOuter, a2);
+      var p3 = polar(rInner, a2);
+      var p4 = polar(rInner, a1);
+      return (
+        'M' + p1.x.toFixed(2) + ',' + p1.y.toFixed(2) +
+        ' A' + rOuter + ',' + rOuter + ' 0 0 1 ' + p2.x.toFixed(2) + ',' + p2.y.toFixed(2) +
+        ' L' + p3.x.toFixed(2) + ',' + p3.y.toFixed(2) +
+        ' A' + rInner + ',' + rInner + ' 0 0 0 ' + p4.x.toFixed(2) + ',' + p4.y.toFixed(2) +
+        ' Z'
+      );
+    }
+
+    var parts = [];
+    // 20 сегментов: центр «20» сверху (−90°). Чётные — чёрные, нечётные — кремовые.
+    for (var i = 0; i < 20; i++) {
+      var a1 = -90 - 9 + i * 18;
+      var a2 = a1 + 18;
+      var isBlack = i % 2 === 0;
+      var bed = isBlack ? black : cream;
+      var ring = isBlack ? red : green;
+      parts.push('<path d="' + ringSector(0, rOut, a1, a2) + '" fill="' + bed + '"/>');
+      parts.push('<path d="' + ringSector(rDblIn, rOut, a1, a2) + '" fill="' + ring + '"/>');
+      parts.push('<path d="' + ringSector(rTrpIn, rTrpOut, a1, a2) + '" fill="' + ring + '"/>');
+    }
+
+    // Тонкая проволока: радиусы только до внешнего яблочка, чтобы не затирать bull
+    for (var w = 0; w < 20; w++) {
+      var ang = -90 - 9 + w * 18;
+      var outer = polar(rOut, ang);
+      var inner = polar(rBullOut, ang);
+      parts.push(
+        '<line x1="' + inner.x.toFixed(2) + '" y1="' + inner.y.toFixed(2) +
+        '" x2="' + outer.x.toFixed(2) + '" y2="' + outer.y.toFixed(2) +
+        '" stroke="' + wire + '" stroke-width="0.35"/>'
+      );
+    }
+    [rOut, rDblIn, rTrpOut, rTrpIn].forEach(function (r) {
+      parts.push(
+        '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + wire + '" stroke-width="0.4"/>'
+      );
+    });
+
+    // Яблочко поверх проволоки
+    parts.push('<circle cx="' + cx + '" cy="' + cy + '" r="' + rBullOut + '" fill="' + green + '" stroke="' + wire + '" stroke-width="0.35"/>');
+    parts.push('<circle cx="' + cx + '" cy="' + cy + '" r="' + rBullIn + '" fill="' + red + '" stroke="' + wire + '" stroke-width="0.3"/>');
+
+    return (
+      '<svg class="news-card-dart-target" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      parts.join('') +
+      '</svg>'
+    );
   }
 
   function renderAdminNews() {
@@ -441,8 +493,10 @@
       col.innerHTML =
         '<div class="news-card' + (item.imageUrl ? ' news-card-has-image' : '') + '">' +
         imageBlock +
+        '<div class="news-card-heading">' +
         '<div class="news-card-icon">' + getDartTargetSvg() + '</div>' +
         '<h3 class="news-card-title">' + escapeHtml(item.title) + '</h3>' +
+        '</div>' +
         '<p class="news-card-text">' + sanitizeNewsHtml((item.text || '').replace(/\n/g, '<br>')) + '</p>' +
         '<button type="button" class="news-card-toggle" aria-expanded="false">Читать полностью</button>' +
         '<time class="news-card-date" datetime="' + escapeAttr(item.date) + '">' + formatDate(item.date) + '</time>' +
