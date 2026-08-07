@@ -427,7 +427,7 @@ h2.section-title,
   background-color: var(--color-bg-alt);
 }
 
-/* Кнопки «Все новости» / «Все соревнования»: одинаковый отступ сверху и снизу */
+/* Кнопки «Все новости» / «Все соревнования» / «Все фото»: одинаковый отступ сверху и снизу */
 .section-more-wrap {
   margin-top: 1.25rem;
   padding-bottom: 1.25rem;
@@ -877,10 +877,6 @@ h2.section-title,
   margin: 0 0 0.25rem 0;
   padding-bottom: 0.5rem;
   border-bottom: 2px solid var(--color-primary, #0d6efd);
-}
-
-.photo-gallery-more {
-  margin-top: 1.5rem;
 }
 
 /* Список событий в фотогалерее */
@@ -1975,11 +1971,7 @@ html.legal-embed .legal-main {
     padding: 0.5rem;
   }
 
-  .photo-gallery-more {
-    margin-top: 1rem;
-  }
-
-  .photo-gallery-more .btn {
+  .section-photo .section-more-wrap .btn {
     width: 100%;
     min-height: 44px;
   }
@@ -2091,7 +2083,8 @@ html.legal-embed .legal-main {
 
   /* После кнопок «Все…» нижний отступ секции сбрасываем — его даёт .section-more-wrap */
   .section-news,
-  .section-competitions {
+  .section-competitions,
+  .section-photo {
     padding-bottom: 0;
   }
 
