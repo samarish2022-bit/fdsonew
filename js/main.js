@@ -101,6 +101,7 @@
     var stopAt = Date.now() + 10000;
     var revealed = !document.documentElement.classList.contains('page-booting');
     var waiting = !revealed;
+    var started = false;
 
     function markUserScroll() {
       userScrolled = true;
@@ -130,10 +131,11 @@
     }
 
     function startScrollPass() {
-      if (revealed && !waiting) {
+      if (started) {
         go();
         return;
       }
+      started = true;
       waiting = false;
       restorePendingHash();
       revealed = true;
