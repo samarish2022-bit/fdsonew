@@ -1,6 +1,6 @@
 {
   "name": "fdso-site",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "Сайт Федерации Дартс Самара",
   "scripts": {
     "start": "node server.js",
