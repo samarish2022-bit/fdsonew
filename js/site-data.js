@@ -967,6 +967,13 @@
     } catch (err) { /* ignore */ }
   }
 
+  /** Все асинхронные блоки главной отрисованы — можно снять page-booting и показать секцию */
+  function notifyContentSettled() {
+    try {
+      window.dispatchEvent(new CustomEvent('fdso:content-settled'));
+    } catch (err) { /* ignore */ }
+  }
+
   function init() {
     renderAdminNews();
     renderAdminPhotos();
@@ -1002,11 +1009,13 @@
 
     Promise.all([newsP, competitionsP, documentsP, friendsP, photosP]).then(function () {
       notifyContentReady();
+      notifyContentSettled();
       // картинки в карточках могут догрузиться чуть позже
       setTimeout(notifyContentReady, 300);
       setTimeout(notifyContentReady, 1000);
     }).catch(function () {
       notifyContentReady();
+      notifyContentSettled();
     });
 
     var isGalleryPage = typeof window.location !== 'undefined' &&

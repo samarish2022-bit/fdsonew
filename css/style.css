@@ -27,6 +27,22 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Переход на главную с #якорем: скрываем main, пока карточки не подгрузились */
+html.page-booting {
+  scroll-behavior: auto;
+  overflow: hidden;
+}
+
+html.page-booting main {
+  opacity: 0;
+  pointer-events: none;
+}
+
+html.page-ready main {
+  opacity: 1;
+  transition: opacity 0.18s ease;
+}
+
 body {
   font-family: var(--font-system);
   font-size: 17px;
