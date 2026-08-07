@@ -17,7 +17,7 @@
    */
   function loadPeopleFromServer() {
     if (!isHttp()) return Promise.resolve(null);
-    var url = location.origin + '/api/people?t=' + Date.now();
+    var url = location.origin + '/api/people';
     return fetch(url)
       .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
       .then(function (data) {

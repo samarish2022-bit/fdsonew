@@ -280,7 +280,7 @@ app.get('/api/news', function (req, res) {
       var parsed = JSON.parse(raw);
       data = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.news) ? parsed.news : []);
     }
-    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Cache-Control', 'public, max-age=60');
     res.json(data);
   } catch (e) {
     res.json([]);
@@ -313,7 +313,7 @@ app.get('/api/competitions', function (req, res) {
       var parsed = JSON.parse(raw);
       data = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.competitions) ? parsed.competitions : []);
     }
-    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Cache-Control', 'public, max-age=60');
     res.json(data);
   } catch (e) {
     res.json([]);
@@ -346,7 +346,7 @@ app.get('/api/documents', function (req, res) {
       var parsed = JSON.parse(raw);
       data = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.documents) ? parsed.documents : []);
     }
-    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Cache-Control', 'public, max-age=60');
     res.json(data);
   } catch (e) {
     res.json([]);
@@ -418,7 +418,7 @@ app.get('/api/friends', function (req, res) {
       var parsed = JSON.parse(raw);
       data = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.friends) ? parsed.friends : []);
     }
-    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Cache-Control', 'public, max-age=60');
     res.json(data);
   } catch (e) {
     res.json([]);
@@ -599,7 +599,7 @@ app.get('/api/people', function (req, res) {
       var parsed = JSON.parse(raw);
       data = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.list) ? parsed.list : []);
     }
-    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Cache-Control', 'public, max-age=60');
     res.json(data);
   } catch (e) {
     res.json([]);
@@ -625,9 +625,31 @@ app.post('/api/save-people', requireAuth, function (req, res) {
   }
 });
 
-// Кэширование изображений на 1 год (файлы с уникальными именами при загрузке)
-app.use('/images', express.static(path.join(__dirname, 'images'), { maxAge: '1y' }));
-app.use(express.static(__dirname));
+// Статика: картинки — долгий кэш; HTML — всегда перепроверка; JS/CSS/JSON — короткий кэш
+app.use('/images', express.static(path.join(__dirname, 'images'), {
+  maxAge: '1y',
+  immutable: true,
+  setHeaders: function (res) {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+}));
+app.use(express.static(__dirname, {
+  etag: true,
+  lastModified: true,
+  setHeaders: function (res, filePath) {
+    if (/\.html?$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-cache');
+      return;
+    }
+    if (/\.(js|css)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+      return;
+    }
+    if (/\.json$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=60');
+    }
+  }
+}));
 
 app.listen(PORT, function () {
   console.log('Сайт: http://localhost:' + PORT);

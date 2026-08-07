@@ -1,6 +1,7 @@
 /**
  * Главная: карточки рейтинга (топ-3 по каждому виду) + кнопка «Весь рейтинг».
- * Данные — те же, что на rating.html (localStorage → FDSO_DEFAULT_*).
+ * По умолчанию — лёгкий FDSO_HOME_RATING_TOP; если в localStorage есть полные
+ * таблицы турниров (после правок на сайте) — пересчитываем топ-3 из них.
  */
 (function () {
   'use strict';
@@ -13,25 +14,25 @@
       id: 'men',
       title: 'Мужской рейтинг',
       key: 'fdso_men_tournaments',
-      defaultKey: 'FDSO_DEFAULT_MEN_TOURNAMENTS'
+      topKey: 'men'
     },
     {
       id: 'women',
       title: 'Женский рейтинг',
       key: 'fdso_women_tournaments',
-      defaultKey: 'FDSO_DEFAULT_WOMEN_TOURNAMENTS'
+      topKey: 'women'
     },
     {
       id: 'men-doubles',
       title: 'Мужской парный рейтинг',
       key: 'fdso_men_doubles_tournaments',
-      defaultKey: 'FDSO_DEFAULT_MEN_DOUBLES_TOURNAMENTS'
+      topKey: 'menDoubles'
     },
     {
       id: 'women-doubles',
       title: 'Женский парный рейтинг',
       key: 'fdso_women_doubles_tournaments',
-      defaultKey: 'FDSO_DEFAULT_WOMEN_DOUBLES_TOURNAMENTS'
+      topKey: 'womenDoubles'
     }
   ];
 
@@ -50,23 +51,7 @@
     return arr.reduce(function (s, n) { return s + n; }, 0);
   }
 
-  function loadTournamentData(storageKey, defaultKey) {
-    var data = null;
-    try {
-      var raw = localStorage.getItem(storageKey);
-      if (raw) data = JSON.parse(raw);
-      if (!data || !data.rows || !data.rows.length) {
-        var def = window[defaultKey];
-        data = (def && def.rows && def.rows.length) ? def : null;
-      }
-    } catch (e) {
-      data = null;
-    }
-    return data;
-  }
-
-  /** Топ игроков по «Сумма 75%» — та же логика, что в rating-*.js */
-  function getTopPlayers(data, limit) {
+  function getTopFromTournamentData(data, limit) {
     if (!data || !data.rows || !data.rows.length) return [];
     var dates = data.dates || [];
     var cellCount = (dates.length * 2) + 2;
@@ -75,10 +60,27 @@
       while (cells.length < cellCount) cells.push('');
       var points = [];
       for (var i = 1; i < cellCount - 2; i += 2) points.push(cells[i]);
-      return { name: row.name || '', sum75: sumExcludingTwoSmallest(points) };
+      return { name: row.name || '', points: sumExcludingTwoSmallest(points) };
     });
-    items.sort(function (a, b) { return b.sum75 - a.sum75; });
+    items.sort(function (a, b) { return b.points - a.points; });
     return items.slice(0, limit);
+  }
+
+  function loadTopPlayers(category) {
+    try {
+      var raw = localStorage.getItem(category.key);
+      if (raw) {
+        var data = JSON.parse(raw);
+        var fromLs = getTopFromTournamentData(data, TOP_N);
+        if (fromLs.length) return fromLs;
+      }
+    } catch (e) { /* ignore */ }
+
+    var defaults = (typeof window.FDSO_HOME_RATING_TOP !== 'undefined' && window.FDSO_HOME_RATING_TOP)
+      ? window.FDSO_HOME_RATING_TOP
+      : null;
+    var list = defaults && defaults[category.topKey];
+    return Array.isArray(list) ? list.slice(0, TOP_N) : [];
   }
 
   function placeIcon(place) {
@@ -100,11 +102,12 @@
           if (place === 1) placeClass += ' rating-place-1';
           else if (place === 2) placeClass += ' rating-place-2';
           else if (place === 3) placeClass += ' rating-place-3';
+          var pts = item.points != null ? item.points : item.sum75;
           return (
             '<li class="rating-home-card-row">' +
             '<span class="' + placeClass + '">' + placeIcon(place) + place + '</span>' +
             '<span class="rating-home-card-name">' + escapeHtml(item.name) + '</span>' +
-            '<span class="rating-home-card-points">' + item.sum75 + '</span>' +
+            '<span class="rating-home-card-points">' + pts + '</span>' +
             '</li>'
           );
         }).join('') +
@@ -135,13 +138,9 @@
     var moreWrap = document.getElementById('rating-more-wrap');
     if (!row) return;
 
-    var html = CATEGORIES.map(function (cat) {
-      var data = loadTournamentData(cat.key, cat.defaultKey);
-      var top = getTopPlayers(data, TOP_N);
-      return renderCard(cat, top);
+    row.innerHTML = CATEGORIES.map(function (cat) {
+      return renderCard(cat, loadTopPlayers(cat));
     }).join('');
-
-    row.innerHTML = html;
 
     if (moreWrap) {
       moreWrap.innerHTML =
