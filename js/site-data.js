@@ -52,11 +52,11 @@
     }
 
     if (apiUrl) {
-      return fetch(apiUrl + '?t=' + Date.now())
+      return fetch(apiUrl)
         .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
         .then(applyData)
         .catch(function () {
-          return fetch(NEWS_FILE + '?t=' + Date.now())
+          return fetch(NEWS_FILE)
             .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
             .then(applyData);
         })
@@ -70,7 +70,7 @@
         });
     }
 
-    return fetch(NEWS_FILE + '?t=' + Date.now())
+    return fetch(NEWS_FILE)
       .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
       .then(applyData)
       .catch(function () {
@@ -80,7 +80,7 @@
         }
         return new Promise(function (resolve) {
           var script = document.createElement('script');
-          script.src = basePath + 'data/news-data.js?t=' + Date.now();
+          script.src = basePath + 'data/news-data.js';
           script.onload = function () {
             if (window.FDSO_NEWS && Array.isArray(window.FDSO_NEWS) && window.FDSO_NEWS.length > 0) {
               cachedNewsFromFile = window.FDSO_NEWS;
@@ -123,11 +123,11 @@
       return cachedCompetitionsFromFile;
     }
     if (apiUrl) {
-      return fetch(apiUrl + '?t=' + Date.now())
+      return fetch(apiUrl)
         .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
         .then(applyData)
         .catch(function () {
-          return fetch(COMPETITIONS_FILE + '?t=' + Date.now())
+          return fetch(COMPETITIONS_FILE)
             .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
             .then(applyData);
         })
@@ -136,7 +136,7 @@
           return cachedCompetitionsFromFile;
         });
     }
-    return fetch(COMPETITIONS_FILE + '?t=' + Date.now())
+    return fetch(COMPETITIONS_FILE)
       .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
       .then(applyData)
       .catch(function () {
@@ -217,7 +217,7 @@
         .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
         .then(applyData)
         .catch(function () {
-          return fetch(PHOTOS_FILE + '?t=' + Date.now())
+          return fetch(PHOTOS_FILE)
             .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
             .then(applyData);
         })
@@ -226,7 +226,7 @@
           return cachedPhotosFromFile;
         });
     }
-    return fetch(PHOTOS_FILE + '?t=' + Date.now())
+    return fetch(PHOTOS_FILE)
       .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
       .then(applyData)
       .catch(function () {
@@ -261,11 +261,11 @@
       return cachedDocumentsFromFile;
     }
     if (apiUrl) {
-      return fetch(apiUrl + '?t=' + Date.now())
+      return fetch(apiUrl)
         .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
         .then(applyData)
         .catch(function () {
-          return fetch(DOCUMENTS_FILE + '?t=' + Date.now())
+          return fetch(DOCUMENTS_FILE)
             .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
             .then(applyData);
         })
@@ -274,7 +274,7 @@
           return cachedDocumentsFromFile;
         });
     }
-    return fetch(DOCUMENTS_FILE + '?t=' + Date.now())
+    return fetch(DOCUMENTS_FILE)
       .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
       .then(applyData)
       .catch(function () {
@@ -305,11 +305,11 @@
       return cachedFriendsFromFile;
     }
     if (apiUrl) {
-      return fetch(apiUrl + '?t=' + Date.now())
+      return fetch(apiUrl)
         .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
         .then(applyData)
         .catch(function () {
-          return fetch(FRIENDS_FILE + '?t=' + Date.now())
+          return fetch(FRIENDS_FILE)
             .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
             .then(applyData);
         })
@@ -318,7 +318,7 @@
           return cachedFriendsFromFile;
         });
     }
-    return fetch(FRIENDS_FILE + '?t=' + Date.now())
+    return fetch(FRIENDS_FILE)
       .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('not ok')); })
       .then(applyData)
       .catch(function () {
