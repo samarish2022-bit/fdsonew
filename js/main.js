@@ -84,7 +84,7 @@
   function sectionHasContent(sectionEl) {
     if (!sectionEl) return false;
     return !!sectionEl.querySelector(
-      '#news-row > *, #competitions-row > *, #documents-row > *, #photo-gallery-container > *, #friends-carousel > *, .contact-link, .social-links'
+      '#news-row > *, #rating-row > *, #competitions-row > *, #documents-row > *, #photo-gallery-container > *, #friends-carousel > *, .contact-link, .social-links'
     );
   }
 

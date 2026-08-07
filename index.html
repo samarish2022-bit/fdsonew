@@ -24,6 +24,7 @@
       var hash = location.hash || '';
       var asyncSections = {
         '#news': 1,
+        '#rating': 1,
         '#competitions': 1,
         '#photo': 1,
         '#documents': 1,
@@ -66,7 +67,7 @@
           <ul class="navbar-nav ms-auto">
             <li class="nav-item"><a class="nav-link" href="#hero">Главная</a></li>
             <li class="nav-item"><a class="nav-link" href="#news">Новости</a></li>
-            <li class="nav-item"><a class="nav-link" href="rating.html">Рейтинг</a></li>
+            <li class="nav-item"><a class="nav-link" href="#rating">Рейтинг</a></li>
             <li class="nav-item"><a class="nav-link" href="#competitions">Соревнования</a></li>
             <li class="nav-item"><a class="nav-link" href="#photo">Фото</a></li>
             <li class="nav-item"><a class="nav-link" href="#documents">Документы</a></li>
@@ -90,7 +91,7 @@
       <ul class="nav flex-column">
         <li><a class="nav-link mobile-nav-link" href="#hero" data-bs-dismiss="offcanvas">Главная</a></li>
         <li><a class="nav-link mobile-nav-link" href="#news" data-bs-dismiss="offcanvas">Новости</a></li>
-        <li><a class="nav-link mobile-nav-link" href="rating.html" data-bs-dismiss="offcanvas">Рейтинг</a></li>
+        <li><a class="nav-link mobile-nav-link" href="#rating" data-bs-dismiss="offcanvas">Рейтинг</a></li>
         <li><a class="nav-link mobile-nav-link" href="#competitions" data-bs-dismiss="offcanvas">Соревнования</a></li>
         <li><a class="nav-link mobile-nav-link" href="#photo" data-bs-dismiss="offcanvas">Фото</a></li>
         <li><a class="nav-link mobile-nav-link" href="#documents" data-bs-dismiss="offcanvas">Документы</a></li>
@@ -124,6 +125,15 @@
         <h2 class="section-title">Новости</h2>
         <div class="row g-4" id="news-row"></div>
         <div class="section-more-wrap text-center" id="news-more-wrap"></div>
+      </div>
+    </section>
+
+    <!-- Rating -->
+    <section class="section section-rating" id="rating">
+      <div class="container">
+        <h2 class="section-title">Рейтинг</h2>
+        <div class="row g-4" id="rating-row"></div>
+        <div class="section-more-wrap text-center" id="rating-more-wrap"></div>
       </div>
     </section>
 
@@ -219,6 +229,11 @@
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+  <script src="js/default-men-tournaments.js"></script>
+  <script src="js/default-women-tournaments.js"></script>
+  <script src="js/default-men-doubles-tournaments.js"></script>
+  <script src="js/default-women-doubles-tournaments.js"></script>
+  <script src="js/home-rating.js"></script>
   <script src="js/site-data.js"></script>
   <script src="js/main.js"></script>
   <script src="js/legal-popup.js"></script>
