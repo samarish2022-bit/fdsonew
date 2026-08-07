@@ -719,6 +719,8 @@ h2.section-title,
 }
 
 .competition-card {
+  display: flex;
+  flex-direction: column;
   background: var(--color-bg);
   border-radius: var(--radius);
   padding: 2rem;
@@ -731,22 +733,6 @@ h2.section-title,
 .competition-card:hover {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
-}
-
-.competition-card-date {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-  margin-bottom: 0.75rem;
-}
-
-.competition-card-date i {
-  width: 18px;
-  height: 18px;
-  color: var(--color-primary);
-  stroke-width: 2;
 }
 
 .competition-card-title {
@@ -779,6 +765,16 @@ h2.section-title,
   margin-bottom: 0.75rem;
 }
 
+.competition-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: auto;
+  margin-bottom: 0.75rem;
+  min-height: 1.5rem;
+}
+
 .competition-card-toggle {
   display: inline-block;
   font-size: 0.8125rem;
@@ -786,8 +782,8 @@ h2.section-title,
   color: var(--color-primary);
   background: none;
   border: none;
-  padding: 0 0 0.5rem 0;
-  margin-bottom: 0.5rem;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
   text-align: left;
   transition: color var(--transition-base);
@@ -808,6 +804,8 @@ h2.section-title,
   font-weight: 600;
   padding: 0.35rem 0.75rem;
   border-radius: 980px;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .competition-card-badge-upcoming {
@@ -818,6 +816,25 @@ h2.section-title,
 .competition-card-badge-past {
   background: var(--color-bg-alt);
   color: var(--color-text-muted);
+}
+
+.competition-card-date {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: 0;
+  margin-left: auto;
+  align-self: flex-end;
+}
+
+.competition-card-date i {
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+  stroke-width: 2;
 }
 
 /* Соревнование с изображением (из админки) */
