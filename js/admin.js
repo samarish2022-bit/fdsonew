@@ -683,6 +683,71 @@
     return day + '.' + month + '.' + year;
   }
 
+  /** YYYY-MM-DD → DD.MM.YYYY без сдвига по часовому поясу */
+  function formatIsoDateToRu(iso) {
+    if (!iso || typeof iso !== 'string') return '';
+    var p = iso.split('-');
+    if (p.length !== 3) return iso;
+    return p[2] + '.' + p[1] + '.' + p[0];
+  }
+
+  function todayIsoLocal() {
+    var d = new Date();
+    var month = ('0' + (d.getMonth() + 1)).slice(-2);
+    var day = ('0' + d.getDate()).slice(-2);
+    return d.getFullYear() + '-' + month + '-' + day;
+  }
+
+  /**
+   * Показывает календарь выбора даты турнира.
+   * onConfirm(ruDate) — дата в формате DD.MM.YYYY.
+   */
+  function promptTournamentDate(onConfirm) {
+    var modalEl = document.getElementById('modal-tournament-date');
+    var input = document.getElementById('tournament-date-input');
+    var confirmBtn = document.getElementById('tournament-date-confirm');
+    if (!modalEl || !input || !confirmBtn || typeof bootstrap === 'undefined' || !bootstrap.Modal) {
+      var fallback = window.prompt('Введите дату турнира (например: 25.01.2026)', '');
+      if (fallback == null) return;
+      fallback = fallback.trim();
+      if (fallback && typeof onConfirm === 'function') onConfirm(fallback);
+      return;
+    }
+    input.value = todayIsoLocal();
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+    function cleanup() {
+      confirmBtn.removeEventListener('click', onOk);
+      modalEl.removeEventListener('hidden.bs.modal', onHidden);
+      input.removeEventListener('keydown', onKey);
+    }
+    function onOk() {
+      var iso = (input.value || '').trim();
+      if (!iso) {
+        input.focus();
+        return;
+      }
+      var ru = formatIsoDateToRu(iso);
+      cleanup();
+      modal.hide();
+      if (typeof onConfirm === 'function') onConfirm(ru);
+    }
+    function onHidden() {
+      cleanup();
+    }
+    function onKey(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onOk();
+      }
+    }
+    confirmBtn.addEventListener('click', onOk);
+    modalEl.addEventListener('hidden.bs.modal', onHidden);
+    input.addEventListener('keydown', onKey);
+    modal.show();
+    setTimeout(function () { input.focus(); }, 200);
+  }
+
   function showScreen(login) {
     var loginEl = document.getElementById('admin-login');
     var dashEl = document.getElementById('admin-dashboard');
@@ -1868,21 +1933,19 @@
     var addDateBtn = document.getElementById('men-tournaments-add-date');
     if (addDateBtn) {
       addDateBtn.addEventListener('click', function () {
-        var data = getMenTournamentsData();
-        var newDate = prompt('Введите дату турнира (например: 25.01.2026)', '');
-        if (newDate == null) return;
-        newDate = newDate.trim();
-        if (!newDate) return;
-        data.dates.push(newDate);
-        data.rows.forEach(function (row) {
-          var cells = row.cells || [];
-          var insertAt = cells.length - 2;
-          if (insertAt < 0) insertAt = 0;
-          cells.splice(insertAt, 0, '', '');
-          row.cells = cells;
+        promptTournamentDate(function (newDate) {
+          var data = getMenTournamentsData();
+          data.dates.push(newDate);
+          data.rows.forEach(function (row) {
+            var cells = row.cells || [];
+            var insertAt = cells.length - 2;
+            if (insertAt < 0) insertAt = 0;
+            cells.splice(insertAt, 0, '', '');
+            row.cells = cells;
+          });
+          setMenTournaments(data);
+          renderMenTournamentsTable();
         });
-        setMenTournaments(data);
-        renderMenTournamentsTable();
       });
     }
     if (addBtn) {
@@ -1992,21 +2055,19 @@
     var addDateBtn = document.getElementById('women-tournaments-add-date');
     if (addDateBtn) {
       addDateBtn.addEventListener('click', function () {
-        var data = getWomenTournamentsData();
-        var newDate = prompt('Введите дату турнира (например: 25.01.2026)', '');
-        if (newDate == null) return;
-        newDate = newDate.trim();
-        if (!newDate) return;
-        data.dates.push(newDate);
-        data.rows.forEach(function (row) {
-          var cells = row.cells || [];
-          var insertAt = cells.length - 2;
-          if (insertAt < 0) insertAt = 0;
-          cells.splice(insertAt, 0, '', '');
-          row.cells = cells;
+        promptTournamentDate(function (newDate) {
+          var data = getWomenTournamentsData();
+          data.dates.push(newDate);
+          data.rows.forEach(function (row) {
+            var cells = row.cells || [];
+            var insertAt = cells.length - 2;
+            if (insertAt < 0) insertAt = 0;
+            cells.splice(insertAt, 0, '', '');
+            row.cells = cells;
+          });
+          setWomenTournaments(data);
+          renderWomenTournamentsTable();
         });
-        setWomenTournaments(data);
-        renderWomenTournamentsTable();
       });
     }
     if (addBtn) {
@@ -2116,21 +2177,19 @@
     var addDateBtn = document.getElementById('men-doubles-tournaments-add-date');
     if (addDateBtn) {
       addDateBtn.addEventListener('click', function () {
-        var data = getMenDoublesTournamentsData();
-        var newDate = prompt('Введите дату турнира (например: 25.01.2026)', '');
-        if (newDate == null) return;
-        newDate = newDate.trim();
-        if (!newDate) return;
-        data.dates.push(newDate);
-        data.rows.forEach(function (row) {
-          var cells = row.cells || [];
-          var insertAt = cells.length - 2;
-          if (insertAt < 0) insertAt = 0;
-          cells.splice(insertAt, 0, '', '');
-          row.cells = cells;
+        promptTournamentDate(function (newDate) {
+          var data = getMenDoublesTournamentsData();
+          data.dates.push(newDate);
+          data.rows.forEach(function (row) {
+            var cells = row.cells || [];
+            var insertAt = cells.length - 2;
+            if (insertAt < 0) insertAt = 0;
+            cells.splice(insertAt, 0, '', '');
+            row.cells = cells;
+          });
+          setMenDoublesTournaments(data);
+          renderMenDoublesTournamentsTable();
         });
-        setMenDoublesTournaments(data);
-        renderMenDoublesTournamentsTable();
       });
     }
     if (addBtn) {
@@ -2240,21 +2299,19 @@
     var addDateBtn = document.getElementById('women-doubles-tournaments-add-date');
     if (addDateBtn) {
       addDateBtn.addEventListener('click', function () {
-        var data = getWomenDoublesTournamentsData();
-        var newDate = prompt('Введите дату турнира (например: 25.01.2026)', '');
-        if (newDate == null) return;
-        newDate = newDate.trim();
-        if (!newDate) return;
-        data.dates.push(newDate);
-        data.rows.forEach(function (row) {
-          var cells = row.cells || [];
-          var insertAt = cells.length - 2;
-          if (insertAt < 0) insertAt = 0;
-          cells.splice(insertAt, 0, '', '');
-          row.cells = cells;
+        promptTournamentDate(function (newDate) {
+          var data = getWomenDoublesTournamentsData();
+          data.dates.push(newDate);
+          data.rows.forEach(function (row) {
+            var cells = row.cells || [];
+            var insertAt = cells.length - 2;
+            if (insertAt < 0) insertAt = 0;
+            cells.splice(insertAt, 0, '', '');
+            row.cells = cells;
+          });
+          setWomenDoublesTournaments(data);
+          renderWomenDoublesTournamentsTable();
         });
-        setWomenDoublesTournaments(data);
-        renderWomenDoublesTournamentsTable();
       });
     }
     if (addBtn) {
