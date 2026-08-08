@@ -377,6 +377,26 @@
           </div>
         </div>
 
+        <!-- Выбор даты турнира (календарь) -->
+        <div class="modal fade" id="modal-tournament-date" tabindex="-1" aria-labelledby="modal-tournament-date-label" aria-hidden="true">
+          <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modal-tournament-date-label">Дата турнира</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+              </div>
+              <div class="modal-body">
+                <label for="tournament-date-input" class="form-label">Выберите дату</label>
+                <input type="date" id="tournament-date-input" class="form-control" required>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" id="tournament-date-confirm" class="btn btn-primary">Добавить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Фотографии -->
         <div class="tab-pane fade" id="photos-panel" role="tabpanel">
           <div class="card mb-4">
