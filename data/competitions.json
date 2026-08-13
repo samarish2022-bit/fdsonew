@@ -30,5 +30,12 @@
     "date": "2026-01-09",
     "status": "upcoming",
     "imageUrl": "images/uploads/competitions/img-1786102010961-3-ho45v1uf.jpg"
+  },
+  {
+    "id": 5,
+    "title": "Рейтинговый турнир «Август»",
+    "text": "Анонс! Рейтинговый турнир «Август» (double in double out). Организатор — Федерация дартс Самарской области.",
+    "date": "2026-08-15",
+    "status": "upcoming"
   }
 ]
