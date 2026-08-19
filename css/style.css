@@ -351,9 +351,9 @@ body {
   scroll-margin-top: var(--header-height, 86px);
 }
 
-/* Hero — чистый верх, динамичный низ как на мае */
+/* Hero — чистый верх, плавный переход к секции новостей */
 .hero {
-  padding: 6rem 0 4rem;
+  padding: 6rem 0 5rem;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -365,11 +365,11 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
-  height: 120px;
-  background:
-    linear-gradient(135deg, transparent 40%, rgba(var(--color-primary-rgb), 0.15) 40%, rgba(var(--color-primary-rgb), 0.15) 55%, transparent 55%),
-    linear-gradient(225deg, transparent 35%, rgba(var(--color-secondary-rgb), 0.12) 35%, rgba(var(--color-secondary-rgb), 0.12) 50%, transparent 50%);
+  bottom: -1px;
+  height: 64px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 64' preserveAspectRatio='none'%3E%3Cpath fill='%23eef6fd' d='M0,28 C480,64 960,0 1440,28 L1440,64 L0,64 Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   pointer-events: none;
   z-index: 0;
 }
