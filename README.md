@@ -32,6 +32,12 @@ npm start
 
 Админка: `http://localhost:3000/admin.html` — пароль задаётся только в `.env` (`ADMIN_PASSWORD`), все операции записи требуют токен после входа.
 
+## Тестовый стенд
+
+Публичный адрес: **https://fdso.rockchat1.ru**
+
+Деплой: [`docs/DEPLOY.md`](docs/DEPLOY.md), скрипт `scripts/deploy-rockchat.sh`.
+
 ## Зависимости
 
 Основные зависимости описаны в `package.json`:
