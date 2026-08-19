@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "name": "fdso-samara",
+  "public": true,
+  "cleanUrls": true,
+  "trailingSlash": false
+}
