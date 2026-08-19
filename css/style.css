@@ -773,6 +773,13 @@ h2.section-title,
   color: var(--color-text);
 }
 
+.page-back-btn {
+  display: block;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .rating-tabs {
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   margin-bottom: 1.5rem;
