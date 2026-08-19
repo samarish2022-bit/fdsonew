@@ -762,7 +762,7 @@
     container.innerHTML = '';
     var backLink = document.createElement('p');
     backLink.className = 'photo-event-back';
-    backLink.innerHTML = '<a href="gallery.html" class="btn btn-outline-primary">← Вся галерея</a>';
+    backLink.innerHTML = '<a href="gallery.html" class="btn btn-outline-primary page-back-btn">все Фото</a>';
     container.appendChild(backLink);
     var titleEl = document.createElement('h2');
     titleEl.className = 'photo-competition-title photo-event-detail-title';
@@ -777,7 +777,7 @@
     container.appendChild(gallery);
     var backLink2 = document.createElement('p');
     backLink2.className = 'photo-event-back mt-4';
-    backLink2.innerHTML = '<a href="gallery.html" class="btn btn-outline-primary">← Вся галерея</a>';
+    backLink2.innerHTML = '<a href="gallery.html" class="btn btn-outline-primary page-back-btn">все Фото</a>';
     container.appendChild(backLink2);
   }
 
