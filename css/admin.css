@@ -49,7 +49,7 @@
 /* Шапка панели */
 .admin-dashboard .admin-header {
   background: #fff;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 3px solid var(--color-secondary, #D52B1E);
 }
 
 .admin-header-title {
@@ -119,6 +119,13 @@
 /* Кнопки */
 .admin-dashboard .btn-primary {
   border-radius: 8px;
+  background-color: var(--color-secondary, #D52B1E);
+  border-color: var(--color-secondary, #D52B1E);
+}
+
+.admin-dashboard .btn-primary:hover {
+  background-color: var(--color-secondary-hover, #B8241A);
+  border-color: var(--color-secondary-hover, #B8241A);
 }
 
 .admin-dashboard .btn-outline-danger.btn-sm {
